@@ -14,9 +14,9 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 name = "musicmate"
 path = "src/main.rs"
 
-[[bin]]
-name = "musicmate-tui"
-path = "src/bin/tui.rs"
+[[example]]
+name = "tui"
+path = "examples/tui.rs"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
