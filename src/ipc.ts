@@ -1,12 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import type {
+  AppSettings,
   HostActionResponse,
   HostContext,
   Lyrics,
   OnlineTrackContext,
   PlaybackStateEvent,
   PositionEvent,
+  SettingsSaveOutcome,
   SpectrumEvent,
   SubtitleEvent,
   Track,
@@ -53,6 +55,11 @@ export const api = {
   openQQLogin: () => invoke<void>("open_qq_login"),
   importQQCookies: () => invoke<string>("import_qq_cookies"),
   closeQQLogin: () => invoke<void>("close_qq_login"),
+  settingsGet: () => invoke<AppSettings>("settings_get"),
+  settingsSave: (settings: AppSettings) =>
+    invoke<SettingsSaveOutcome>("settings_save", { settings }),
+  settingsTestDeepseek: () =>
+    invoke<{ ok: boolean; model_count: number }>("settings_test_deepseek"),
 };
 
 export const events = {

@@ -95,9 +95,10 @@ pub async fn import_qq_cookies(app: AppHandle) -> Result<String, String> {
         .collect::<Vec<_>>()
         .join("; ");
 
-    let root = locate_project_root().ok_or_else(|| "找不到项目根目录".to_string())?;
-    let path = root.join("qqcookies.txt");
-    std::fs::write(&path, &formatted).map_err(|e| format!("写入 qqcookies.txt 失败：{e}"))?;
+    crate::settings::store_qq_cookies(&app, &formatted)?;
+    if let Some(root) = locate_project_root() {
+        let _ = std::fs::write(root.join("qqcookies.txt"), &formatted);
+    }
 
     let _ = win.close();
     crate::sidecar::restart(app.clone());

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
+use tauri::AppHandle;
 
 const API_BASE_URL: &str = "https://api.deepseek.com";
-const MODEL: &str = "deepseek-v4-pro";
 const MAX_SPOKEN_CONTEXT: usize = 5;
 const MAX_RECENT_TRACKS_CONTEXT: usize = 5;
 
@@ -104,9 +104,9 @@ struct ChoiceMessage {
     content: String,
 }
 
-pub fn generate_line(ctx: &HostContext) -> Result<String, String> {
-    let api_key = load_deepseek_api_key()?;
-    let model = std::env::var("DEEPSEEK_MODEL").unwrap_or_else(|_| MODEL.to_string());
+pub fn generate_line(app: Option<&AppHandle>, ctx: &HostContext) -> Result<String, String> {
+    let api_key = crate::settings::deepseek_api_key(app)?;
+    let model = crate::settings::deepseek_model(app);
 
     let client = reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(20))
@@ -159,9 +159,9 @@ pub fn generate_line(ctx: &HostContext) -> Result<String, String> {
         .ok_or_else(|| "model returned empty text".to_string())
 }
 
-pub fn chat_reply(message: &str, ctx: &HostContext) -> Result<String, String> {
-    let api_key = load_deepseek_api_key()?;
-    let model = std::env::var("DEEPSEEK_MODEL").unwrap_or_else(|_| MODEL.to_string());
+pub fn chat_reply(app: Option<&AppHandle>, message: &str, ctx: &HostContext) -> Result<String, String> {
+    let api_key = crate::settings::deepseek_api_key(app)?;
+    let model = crate::settings::deepseek_model(app);
     let client = reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(20))
         .build()
@@ -211,9 +211,9 @@ pub fn chat_reply(message: &str, ctx: &HostContext) -> Result<String, String> {
         .ok_or_else(|| "model returned empty text".to_string())
 }
 
-pub fn plan_action(message: &str, ctx: &HostContext) -> Result<HostAction, String> {
-    let api_key = load_deepseek_api_key()?;
-    let model = std::env::var("DEEPSEEK_MODEL").unwrap_or_else(|_| MODEL.to_string());
+pub fn plan_action(app: Option<&AppHandle>, message: &str, ctx: &HostContext) -> Result<HostAction, String> {
+    let api_key = crate::settings::deepseek_api_key(app)?;
+    let model = crate::settings::deepseek_model(app);
     let client = reqwest::blocking::Client::builder()
         .timeout(std::time::Duration::from_secs(20))
         .build()
@@ -276,26 +276,6 @@ fn parse_action_json(content: &str) -> Result<HostAction, String> {
         trimmed
     };
     serde_json::from_str(json).map_err(|e| format!("decode action json: {e}; content: {content}"))
-}
-
-fn load_deepseek_api_key() -> Result<String, String> {
-    if let Ok(value) = std::env::var("DEEPSEEK_API_KEY") {
-        let value = value.trim().to_string();
-        if !value.is_empty() {
-            return Ok(value);
-        }
-    }
-
-    for path in ["deepseekapi.txt", "../deepseekapi.txt"] {
-        if let Ok(value) = std::fs::read_to_string(path) {
-            let value = value.trim().to_string();
-            if !value.is_empty() {
-                return Ok(value);
-            }
-        }
-    }
-
-    Err("DeepSeek API key not found; set DEEPSEEK_API_KEY or create deepseekapi.txt".to_string())
 }
 
 fn build_system_prompt(persona: &Persona) -> String {

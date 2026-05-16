@@ -318,7 +318,7 @@ fn handle_host_chat(
     let tx = host_tx.clone();
     let original_message = message.to_string();
     thread::spawn(move || {
-        let result = ai::plan_action(&prompt, &ctx);
+        let result = ai::plan_action(None, &prompt, &ctx);
         let _ = tx.send(HostTaskResult {
             original_message,
             result,
@@ -665,7 +665,7 @@ fn speak_for_current(app: &mut App, player_tx: &Sender<Command>, trigger: Trigge
     let ctx = build_host_context(app, trigger);
     let tx = player_tx.clone();
     thread::spawn(move || {
-        let text = ai::generate_line(&ctx).unwrap_or_else(|_| fallback_line());
+        let text = ai::generate_line(None, &ctx).unwrap_or_else(|_| fallback_line());
         if let Ok(bytes) = musicmate_lib::tts::synthesize(&text, musicmate_lib::tts::DEFAULT_VOICE) {
             let _ = tx.send(Command::PlayAnnouncement { bytes, text });
         }

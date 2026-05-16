@@ -61,7 +61,19 @@ export interface SpectrumEvent {
   bands: number[];
 }
 
-export type ViewName = "library" | "playlists" | "search" | "now-playing" | "host";
+export type ViewName = "library" | "playlists" | "search" | "now-playing" | "host" | "settings";
+
+export interface AppSettings {
+  deepseek_api_key: string;
+  deepseek_model: string;
+  qq_api_base: string;
+  qq_cookies: string;
+}
+
+export interface SettingsSaveOutcome {
+  saved: AppSettings;
+  sidecar_restarted: boolean;
+}
 
 export interface HostContext {
   persona: { name: string; style: string };

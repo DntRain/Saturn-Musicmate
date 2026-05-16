@@ -245,13 +245,20 @@ pub fn play_online(
 }
 
 #[tauri::command]
-pub async fn generate_host_line(context: HostContext) -> Result<String, String> {
-    blocking_task(move || ai::generate_line(&context)).await
+pub async fn generate_host_line(
+    app: AppHandle,
+    context: HostContext,
+) -> Result<String, String> {
+    blocking_task(move || ai::generate_line(Some(&app), &context)).await
 }
 
 #[tauri::command]
-pub async fn chat_with_host(message: String, context: HostContext) -> Result<String, String> {
-    blocking_task(move || ai::chat_reply(&message, &context)).await
+pub async fn chat_with_host(
+    app: AppHandle,
+    message: String,
+    context: HostContext,
+) -> Result<String, String> {
+    blocking_task(move || ai::chat_reply(Some(&app), &message, &context)).await
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -266,11 +273,12 @@ pub struct HostActionResponse {
 
 #[tauri::command]
 pub async fn plan_host_action(
+    app: AppHandle,
     message: String,
     context: HostContext,
 ) -> Result<HostActionResponse, String> {
     blocking_task(move || {
-        let action = ai::plan_action(&message, &context)?;
+        let action = ai::plan_action(Some(&app), &message, &context)?;
         let kind = match action.action {
             ai::HostActionKind::Chat => "chat",
             ai::HostActionKind::SearchSong => "search_song",

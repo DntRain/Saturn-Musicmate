@@ -5,6 +5,7 @@ pub mod media;
 pub mod online;
 pub mod player;
 pub mod qq_login;
+pub mod settings;
 pub mod sidecar;
 pub mod spectrum;
 pub mod tts;
@@ -17,6 +18,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .manage(sidecar::SidecarState::default())
         .setup(|app| {
+            settings::hydrate_env(&app.handle());
             commands::register(&app.handle());
             sidecar::spawn_async(app.handle().clone());
             Ok(())
@@ -48,6 +50,9 @@ pub fn run() {
             qq_login::open_qq_login,
             qq_login::import_qq_cookies,
             qq_login::close_qq_login,
+            settings::settings_get,
+            settings::settings_save,
+            settings::settings_test_deepseek,
         ])
         .build(tauri::generate_context!())
         .expect("error while building Musicmate")

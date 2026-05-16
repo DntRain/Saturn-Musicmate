@@ -6,6 +6,7 @@ import { LibraryView } from "./components/LibraryView";
 import { NowPlayingView } from "./components/NowPlayingView";
 import { PlaylistsView } from "./components/PlaylistsView";
 import { SearchView } from "./components/SearchView";
+import { SettingsView } from "./components/SettingsView";
 import { HostView, makeReplyLine, type ChatLine } from "./components/HostView";
 import { PlayerBar } from "./components/PlayerBar";
 import { Waveform } from "./components/Waveform";
@@ -280,6 +281,7 @@ export default function App() {
                 setInput={setChatInput}
               />
             )}
+            {view === "settings" && <SettingsView />}
           </motion.div>
         </AnimatePresence>
       </main>
