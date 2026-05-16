@@ -54,7 +54,10 @@ jobs:
             patchelf \
             libssl-dev \
             libsoup-3.0-dev \
-            libjavascriptcoregtk-4.1-dev
+            libjavascriptcoregtk-4.1-dev \
+            libasound2-dev \
+            libpulse-dev \
+            libjack-jackd2-dev
 
       - name: Install frontend dependencies
         run: npm ci
