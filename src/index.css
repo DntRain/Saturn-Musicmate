@@ -1,0 +1,151 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Galaxie Copernicus";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url("/fonts/GalaxieCopernicus-Book.woff") format("woff"),
+    url("/fonts/GalaxieCopernicus-Book.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Galaxie Copernicus";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    url("/fonts/GalaxieCopernicus-BookItalic.woff") format("woff"),
+    url("/fonts/GalaxieCopernicus-BookItalic.ttf") format("truetype");
+}
+
+@theme {
+  --color-bg: #0c0c0e;
+  --color-bg-elev: #161618;
+  --color-card: rgba(255, 255, 255, 0.04);
+  --color-card-hover: rgba(255, 255, 255, 0.08);
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text: #f5f5f7;
+  --color-text-dim: #98989d;
+  --color-text-muted: #6b6b70;
+  --color-accent: #fa2d48;
+  --color-accent-soft: rgba(250, 45, 72, 0.18);
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+
+  --font-serif:
+    "Galaxie Copernicus", "Test Tiempos Headline", "Tiempos Headline",
+    "Test Tiempos Text", "Tiempos Text", ui-serif, Georgia, Cambria,
+    "Times New Roman", serif;
+
+  --radius-card: 12px;
+  --radius-cover: 8px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  font-family: inherit;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.lyrics-scroll {
+  scrollbar-width: none;
+}
+.lyrics-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.glass {
+  background: rgba(20, 20, 22, 0.72);
+  backdrop-filter: saturate(180%) blur(30px);
+  -webkit-backdrop-filter: saturate(180%) blur(30px);
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 16s linear infinite;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 16px;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-text) var(--progress, 0%),
+    rgba(255, 255, 255, 0.18) var(--progress, 0%)
+  );
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: var(--color-text);
+  margin-top: -4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+input[type="range"]:hover::-webkit-slider-thumb,
+input[type="range"]:active::-webkit-slider-thumb {
+  opacity: 1;
+}

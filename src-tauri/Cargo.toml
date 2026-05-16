@@ -1,0 +1,47 @@
+[package]
+name = "musicmate"
+version = "0.1.0"
+description = "Music companion with local playback, lyrics, and AI host lines"
+authors = ["DontRain"]
+edition = "2021"
+default-run = "musicmate"
+
+[lib]
+name = "musicmate_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "musicmate"
+path = "src/main.rs"
+
+[[bin]]
+name = "musicmate-tui"
+path = "src/bin/tui.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-store = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rodio = { version = "0.19", features = ["symphonia-aac", "symphonia-isomp4"] }
+walkdir = "2"
+lofty = "0.21"
+msedge-tts = "0.3"
+base64 = "0.22"
+sha1 = "0.10"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+ratatui = "0.29"
+crossterm = "0.28"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+parking_lot = "0.12"
+once_cell = "1"
+rustfft = { version = "6", default-features = false }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

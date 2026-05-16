@@ -1,0 +1,54 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+*.local
+
+# Rust / Tauri build artifacts
+target/
+src-tauri/target/
+**/target/
+
+# Bundled / vendored third-party services
+.services/
+vendor/
+
+# Secrets — DO NOT COMMIT
+.env
+.env.*
+!.env.example
+deepseekapi.txt
+qqcookies.txt
+*.cookies
+*secret*
+*credential*
+*.pem
+*.key
+
+# Random archives accidentally dropped in
+*.zip
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Claude local
+.claude/
