@@ -8,7 +8,13 @@ import type { PlayerApi } from "../state/player";
 
 type RightPane = "lyrics" | "queue" | "comments";
 
-export function NowPlayingView({ player }: { player: PlayerApi }) {
+export function NowPlayingView({
+  player,
+  onBack,
+}: {
+  player: PlayerApi;
+  onBack?: () => void;
+}) {
   const { state, toggle, next, prev } = player;
   const track = state.currentIndex != null ? state.tracks[state.currentIndex] : null;
   const durationMs = (track?.duration_secs ?? 0) * 1000;
@@ -17,6 +23,28 @@ export function NowPlayingView({ player }: { player: PlayerApi }) {
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_18%_18%,rgba(250,45,72,0.18),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(20,184,166,0.12),transparent_30%),linear-gradient(135deg,#141416_0%,#0c0c0e_48%,#181115_100%)]">
       <Backdrop cover={state.cover} />
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="收起"
+          title="收起"
+          className="absolute left-5 top-3 z-20 grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+      )}
       <div className="relative z-10 grid h-full grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] gap-12 px-12 py-10">
         <div className="flex min-h-0 flex-col items-center justify-center gap-6">
           <motion.div

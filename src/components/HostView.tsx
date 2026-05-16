@@ -691,7 +691,7 @@ function HostHeader({
   busy: boolean;
 }) {
   return (
-    <header className="flex items-center justify-between border-b border-white/[0.06] px-6 py-3">
+    <header className="relative z-40 flex items-center justify-between border-b border-white/[0.06] px-6 py-3">
       <div className="flex items-center gap-2.5">
         <div className="relative grid h-7 w-7 place-items-center">
           <img

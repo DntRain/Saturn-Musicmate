@@ -24,7 +24,7 @@ export function TrackList({
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-2 text-[var(--color-text-muted)]">
         <span className="text-sm">还没有歌曲</span>
-        <span className="text-xs">点击左下角「打开音乐文件夹」开始</span>
+        <span className="text-xs">在「设置」里点「打开音乐文件夹」开始</span>
       </div>
     );
   }

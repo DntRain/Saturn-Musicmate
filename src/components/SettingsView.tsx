@@ -16,7 +16,7 @@ type Status =
   | { kind: "success"; text: string }
   | { kind: "error"; text: string };
 
-export function SettingsView() {
+export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Promise<void> }) {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [original, setOriginal] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -142,6 +142,22 @@ export function SettingsView() {
             令牌和 Cookies 仅保存在本机，不会上传任何远程服务。
           </p>
         </header>
+
+        <Section title="资料库" hint="选择本地音乐文件夹，Musicmate 会扫描其中的音频文件。">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[12.5px] text-white/55">
+              支持 mp3 / flac / wav / m4a / ogg / opus 等常见格式。
+            </p>
+            <button
+              type="button"
+              onClick={() => onPickFolder?.()}
+              disabled={!onPickFolder}
+              className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/80 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+            >
+              打开音乐文件夹
+            </button>
+          </div>
+        </Section>
 
         <Section title="DeepSeek API" hint="为 Silen 的对话与意图规划提供模型支持。">
           <Field label="API Key" hint="从 platform.deepseek.com 「API Keys」页面创建。">

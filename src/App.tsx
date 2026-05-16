@@ -31,6 +31,20 @@ export default function App() {
   const playlists = usePlaylists();
   const sidecar = useSidecar();
   const [view, setView] = useState<ViewName>("host");
+  const previousViewRef = useRef<ViewName>("host");
+  const goToView = useCallback((next: ViewName) => {
+    setView((cur) => {
+      if (cur !== next) previousViewRef.current = cur;
+      return next;
+    });
+  }, []);
+  const goBackFromNowPlaying = useCallback(() => {
+    setView((cur) => {
+      if (cur !== "now-playing") return cur;
+      const prev = previousViewRef.current;
+      return prev && prev !== "now-playing" ? prev : "host";
+    });
+  }, []);
   const [toast, setToast] = useState<string | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [chatLines, setChatLines] = useState<ChatLine[]>([]);
@@ -207,13 +221,13 @@ export default function App() {
       if (typeof dir === "string") {
         const tracks = await api.scanLibrary(dir);
         await player.loadTracks(tracks);
-        setView("library");
+        goToView("library");
         setOverlayOpen(false);
       }
     } catch (e) {
       setToast(String(e));
     }
-  }, [player]);
+  }, [goToView, player]);
 
   const playOnlineTrack = useCallback(
     async (track: Track, _playUrl: string) => {
@@ -225,14 +239,18 @@ export default function App() {
 
   const onLoadOnline = useCallback(
     async (track: Track, playUrl: string) => {
-      setView("now-playing");
+      goToView("now-playing");
       await playOnlineTrack(track, playUrl);
     },
-    [playOnlineTrack],
+    [goToView, playOnlineTrack],
   );
 
   return (
     <div className="relative flex h-screen w-screen flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
+      <div
+        data-tauri-drag-region
+        className="fixed inset-x-0 top-0 z-30 h-7"
+      />
       <main className="relative flex min-h-0 flex-1 flex-col">
         <AnimatePresence mode="wait">
           <motion.div
@@ -256,7 +274,9 @@ export default function App() {
             {view === "playlists" && (
               <PlaylistsView player={player} playlists={playlists} />
             )}
-            {view === "now-playing" && <NowPlayingView player={player} />}
+            {view === "now-playing" && (
+              <NowPlayingView player={player} onBack={goBackFromNowPlaying} />
+            )}
             {view === "search" && (
               <SearchView
                 onLoadOnlineAsTrack={onLoadOnline}
@@ -281,19 +301,18 @@ export default function App() {
                 setInput={setChatInput}
               />
             )}
-            {view === "settings" && <SettingsView />}
+            {view === "settings" && <SettingsView onPickFolder={pickFolder} />}
           </motion.div>
         </AnimatePresence>
       </main>
       <Waveform playing={player.state.playing} cover={player.state.cover} />
-      <PlayerBar player={player} onOpenNowPlaying={() => setView("now-playing")} />
+      <PlayerBar player={player} onOpenNowPlaying={() => goToView("now-playing")} />
       <AnimatePresence>
         {overlayOpen && (
           <CommandOverlay
             active={view}
-            onSelect={setView}
+            onSelect={goToView}
             onClose={() => setOverlayOpen(false)}
-            onPickFolder={pickFolder}
           />
         )}
       </AnimatePresence>

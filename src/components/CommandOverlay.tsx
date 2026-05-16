@@ -1,9 +1,7 @@
 import type { ReactElement } from "react";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import clsx from "clsx";
-import { api } from "../ipc";
 import type { ViewName } from "../types";
 
 interface NavItem {
@@ -83,41 +81,11 @@ export function CommandOverlay({
   active,
   onSelect,
   onClose,
-  onPickFolder,
 }: {
   active: ViewName;
   onSelect: (v: ViewName) => void;
   onClose: () => void;
-  onPickFolder: () => void;
 }) {
-  const [busy, setBusy] = useState(false);
-  const [hint, setHint] = useState<string | null>(null);
-
-  const handleLogin = async () => {
-    try {
-      setBusy(true);
-      setHint(null);
-      await api.openQQLogin();
-      setHint("已打开登录窗口，请在窗口内完成登录后点「导入 Cookies」");
-    } catch (e) {
-      setHint(String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleImport = async () => {
-    try {
-      setBusy(true);
-      const msg = await api.importQQCookies();
-      setHint(msg);
-    } catch (e) {
-      setHint(String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <motion.div
       key="cmd-overlay"
@@ -159,25 +127,6 @@ export function CommandOverlay({
               </button>
             );
           })}
-        </div>
-
-        <div className="flex w-full flex-col items-center gap-2">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <OverlayBtn onClick={onPickFolder} disabled={busy}>
-              打开音乐文件夹
-            </OverlayBtn>
-            <OverlayBtn onClick={handleLogin} disabled={busy}>
-              登录 QQ 音乐
-            </OverlayBtn>
-            <OverlayBtn onClick={handleImport} disabled={busy} accent>
-              导入 Cookies
-            </OverlayBtn>
-          </div>
-          {hint && (
-            <div className="max-w-md rounded-md bg-black/40 px-3 py-1.5 text-center text-[11.5px] leading-snug text-white/70">
-              {hint}
-            </div>
-          )}
         </div>
 
         <div className="text-[11.5px] tracking-[0.18em] text-white/30">
@@ -247,29 +196,3 @@ function WinBtn({
   );
 }
 
-function OverlayBtn({
-  children,
-  onClick,
-  disabled,
-  accent,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  disabled?: boolean;
-  accent?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={clsx(
-        "rounded-md border px-3 py-1.5 text-[12px] transition-colors disabled:opacity-40",
-        accent
-          ? "border-[var(--color-accent)]/40 bg-[var(--color-accent)]/15 text-white hover:bg-[var(--color-accent)]/25"
-          : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10 hover:text-white",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
