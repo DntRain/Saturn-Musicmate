@@ -36,7 +36,7 @@ export function LibraryView({
             共 {tracks.length} 首歌 · {albums.length} 张专辑
           </p>
         </div>
-        <div className="flex gap-1 rounded-lg bg-white/5 p-1">
+        <div className="flex gap-1 rounded-lg bg-[var(--color-surface-1)] p-1">
           {(["songs", "albums"] as Mode[]).map((m) => (
             <button
               key={m}
@@ -44,8 +44,8 @@ export function LibraryView({
               className={clsx(
                 "rounded-md px-3 py-1 text-[12.5px] transition-colors",
                 mode === m
-                  ? "bg-white/10 text-white"
-                  : "text-[var(--color-text-dim)] hover:text-white",
+                  ? "bg-[var(--color-surface-2)] text-[var(--color-text)]"
+                  : "text-[var(--color-text-dim)] hover:text-[var(--color-text)]",
               )}
             >
               {m === "songs" ? "歌曲" : "专辑"}
@@ -82,7 +82,7 @@ export function LibraryView({
                   className="aspect-square w-full transition-transform group-hover:scale-[1.02]"
                 />
                 <div className="flex flex-col leading-tight">
-                  <span className="truncate text-[13px] text-white">{a.album || "未命名专辑"}</span>
+                  <span className="truncate text-[13px] text-[var(--color-text)]">{a.album || "未命名专辑"}</span>
                   <span className="truncate text-[12px] text-[var(--color-text-dim)]">{a.artist}</span>
                 </div>
               </button>

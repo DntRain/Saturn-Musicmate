@@ -264,20 +264,6 @@ export function HostView({
     [pushLine],
   );
 
-  const onGenerate = async () => {
-    setBusy(true);
-    try {
-      const ctx = buildContext(currentTrack ? "transition" : "welcome");
-      const text = await api.generateHostLine(ctx);
-      pushLine(makeReplyLine(text));
-      api.speak(text).catch(() => {});
-    } catch (e) {
-      pushLine(makeReplyLine(`（出错：${e}）`));
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const searchOne = async (query: string, avoidCurrent = false): Promise<Track | null> => {
     const results = await api.searchOnline(query, 20);
     for (const r of results) {
@@ -571,9 +557,6 @@ export function HostView({
       <HostHeader
         currentTrack={currentTrack}
         playing={state.playing}
-        cover={state.cover}
-        onGenerate={onGenerate}
-        busy={busy}
       />
 
       <div className="relative flex-1 overflow-hidden">
@@ -605,7 +588,7 @@ export function HostView({
         {lines.length > 0 && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--color-bg)] via-[var(--color-bg)]/85 to-transparent px-6 pb-6 pt-10">
             <div className="pointer-events-auto mx-auto max-w-3xl">
-              <div className="flex items-end gap-2 rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] px-4 py-2.5 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.6)] transition-colors focus-within:border-white/20">
+              <div className="flex items-end gap-2 rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] px-4 py-2.5 shadow-[0_4px_24px_-8px_var(--color-shadow)] transition-colors focus-within:border-[var(--color-border-strong)]">
                 <textarea
                   ref={inputRef}
                   value={input}
@@ -618,7 +601,7 @@ export function HostView({
                   }}
                   placeholder="Reply to Silen…"
                   rows={1}
-                  className="flex-1 resize-none bg-transparent py-1 text-[15px] leading-relaxed text-[var(--color-text)] outline-none placeholder:text-white/35"
+                  className="flex-1 resize-none bg-transparent py-1 text-[15px] leading-relaxed text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-faint)]"
                 />
                 <button
                   onClick={() => onSend()}
@@ -680,55 +663,29 @@ function CoverTint({
 function HostHeader({
   currentTrack,
   playing,
-  cover,
-  onGenerate,
-  busy,
 }: {
   currentTrack: Track | null;
   playing: boolean;
-  cover: string | null;
-  onGenerate: () => void;
-  busy: boolean;
 }) {
   return (
-    <header className="relative z-40 flex items-center justify-between border-b border-white/[0.06] px-6 py-3">
-      <div className="flex items-center gap-2.5">
-        <div className="relative grid h-7 w-7 place-items-center">
-          <img
-            src="/musicmate-saturn-white.svg"
-            alt=""
-            className="h-7 w-7"
-            draggable={false}
-          />
-          {playing && (
-            <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-[var(--color-bg)] bg-emerald-400" />
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[14px] font-medium text-[var(--color-text)]">Silen</span>
-          {currentTrack && (
-            <span className="text-[12px] text-white/40">
-              · 正在听 {currentTrack.title}
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        {cover && (
-          <img
-            src={cover}
-            alt=""
-            className="h-7 w-7 rounded-md object-cover"
-          />
+    <header className="flex items-center gap-2.5 border-b border-[var(--color-border)] px-6 py-3">
+      <div className="relative grid h-7 w-7 shrink-0 place-items-center">
+        <img
+          src="/musicmate-saturn-white.svg"
+          alt=""
+          className="theme-invert h-7 w-7"
+          draggable={false}
+        />
+        {playing && (
+          <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-[var(--color-bg)] bg-emerald-400" />
         )}
-        <button
-          onClick={onGenerate}
-          disabled={busy}
-          className="rounded-lg px-3 py-1.5 text-[12.5px] text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white disabled:opacity-40"
-        >
-          开场白
-        </button>
       </div>
+      <span className="text-[14px] font-medium leading-none text-[var(--color-text)]">Silen</span>
+      {currentTrack && (
+        <span className="truncate text-[12px] leading-none text-[var(--color-text-faint)]">
+          · 正在听 {currentTrack.title}
+        </span>
+      )}
     </header>
   );
 }
@@ -829,7 +786,7 @@ function EmptyState({
         <img
           src="/musicmate-saturn-white.svg"
           alt=""
-          className="h-14 w-14"
+          className="theme-invert h-14 w-14"
           draggable={false}
         />
         <div className="font-serif text-[40px] font-normal leading-[1.05] tracking-[-0.005em] text-[var(--color-text)]">
@@ -838,7 +795,7 @@ function EmptyState({
       </div>
 
       <div className="w-full">
-        <div className="flex flex-col gap-2 rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] px-4 pb-2 pt-3 shadow-[0_10px_40px_-12px_rgba(0,0,0,0.6)] transition-colors focus-within:border-white/20">
+        <div className="flex flex-col gap-2 rounded-3xl border border-[var(--color-border)] bg-[var(--color-bg-elev)] px-4 pb-2 pt-3 shadow-[0_10px_40px_-12px_var(--color-shadow)] transition-colors focus-within:border-[var(--color-border-strong)]">
           <textarea
             ref={taRef}
             value={input}
@@ -852,14 +809,14 @@ function EmptyState({
             placeholder="How can I help you today?"
             rows={2}
             autoFocus
-            className="min-h-[52px] w-full resize-none bg-transparent px-1 text-[15px] leading-relaxed text-[var(--color-text)] outline-none placeholder:text-white/35"
+            className="min-h-[52px] w-full resize-none bg-transparent px-1 text-[15px] leading-relaxed text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-faint)]"
           />
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               disabled
               aria-label="附件"
-              className="grid h-8 w-8 place-items-center rounded-full text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white disabled:opacity-50"
+              className="grid h-8 w-8 place-items-center rounded-full text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-1)] hover:text-[var(--color-text)] disabled:opacity-50"
             >
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
@@ -869,7 +826,7 @@ function EmptyState({
             <button
               type="button"
               disabled
-              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[12.5px] text-white/65 transition-colors hover:bg-white/[0.06] hover:text-white disabled:opacity-70"
+              className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[12.5px] text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-1)] hover:text-[var(--color-text)] disabled:opacity-70"
             >
               Silen · Opus 4.7
               <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -881,7 +838,7 @@ function EmptyState({
                 type="button"
                 disabled
                 aria-label="语音"
-                className="grid h-8 w-8 place-items-center rounded-full text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white disabled:opacity-50"
+                className="grid h-8 w-8 place-items-center rounded-full text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-1)] hover:text-[var(--color-text)] disabled:opacity-50"
               >
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="9" y="3" width="6" height="12" rx="3" />
@@ -919,13 +876,9 @@ function EmptyState({
               key={c.label}
               onClick={() => onSend(c.prompt)}
               disabled={busy}
-              style={{
-                border: "1px solid rgba(255,255,255,0.1)",
-                background: "transparent",
-              }}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] bg-transparent px-3 py-2 text-[13px] text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-1)] hover:text-[var(--color-text)] disabled:opacity-40"
             >
-              <span className="text-white/45">{c.icon}</span>
+              <span className="text-[var(--color-text-dim)]">{c.icon}</span>
               {c.label}
             </button>
           ))}
@@ -986,11 +939,11 @@ function ThinkingLine({ line }: { line: Extract<ChatLine, { kind: "thinking" }> 
   if (line.done) return null;
   return (
     <FadeIn>
-      <div className="flex items-center gap-2.5 text-[13px] text-white/55">
+      <div className="flex items-center gap-2.5 text-[13px] text-[var(--color-text-dim)]">
         <img
           src="/musicmate-loader-beat-white.svg"
           alt=""
-          className="h-5 w-5"
+          className="theme-invert h-5 w-5"
           draggable={false}
         />
         <span>正在思考…</span>
@@ -1019,19 +972,19 @@ function ToolLine({
   const label = TOOL_LABEL[line.tool];
   return (
     <FadeIn>
-      <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-3.5 py-2.5 text-[13px] leading-relaxed">
+      <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3.5 py-2.5 text-[13px] leading-relaxed">
         <div className="flex items-center gap-2">
           <StatusBadge status={line.status} />
-          <span className="font-mono text-[12.5px] text-white/85">{label}</span>
+          <span className="font-mono text-[12.5px] text-[var(--color-text-strong)]">{label}</span>
           {line.input && (
-            <span className="font-mono text-[12px] text-white/40">
+            <span className="font-mono text-[12px] text-[var(--color-text-faint)]">
               ({truncate(line.input, 60)})
             </span>
           )}
         </div>
         {(line.summary || line.errorText) && (
           <div className="ml-[20px] mt-1 text-[12.5px]">
-            <span className={line.status === "error" ? "text-rose-300/85" : "text-white/55"}>
+            <span className={line.status === "error" ? "text-rose-300/85" : "text-[var(--color-text-dim)]"}>
               {line.errorText ?? line.summary}
             </span>
           </div>
@@ -1042,7 +995,7 @@ function ToolLine({
               <TrackChip key={`${line.id}:${t.path}`} track={t} onPlay={onPlayTrack} />
             ))}
             {line.tracks.length > 5 && (
-              <div className="pl-2 text-[11.5px] text-white/35">
+              <div className="pl-2 text-[11.5px] text-[var(--color-text-faint)]">
                 … 另有 {line.tracks.length - 5} 首
               </div>
             )}
@@ -1063,22 +1016,22 @@ function TrackChip({
   return (
     <button
       onClick={() => onPlay(track)}
-      className="group flex items-center gap-2 rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1.5 text-left transition-colors hover:border-white/15 hover:bg-white/[0.05]"
+      className="group flex items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-2 py-1.5 text-left transition-colors hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-2)]"
     >
       {track.cover_url ? (
         <img src={track.cover_url} alt="" className="h-7 w-7 rounded object-cover" />
       ) : (
-        <div className="grid h-7 w-7 place-items-center rounded bg-white/5 text-white/30">
+        <div className="grid h-7 w-7 place-items-center rounded bg-[var(--color-surface-1)] text-[var(--color-text-faint)]">
           <svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor">
             <path d="M8 5v14l11-7z" />
           </svg>
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <div className="truncate font-sans text-[12px] text-white/90">{track.title}</div>
-        <div className="truncate font-sans text-[10.5px] text-white/50">{track.artist}</div>
+        <div className="truncate font-sans text-[12px] text-[var(--color-text)]">{track.title}</div>
+        <div className="truncate font-sans text-[10.5px] text-[var(--color-text-dim)]">{track.artist}</div>
       </div>
-      <span className="select-none font-mono text-[10.5px] text-white/30 opacity-0 transition-opacity group-hover:opacity-100">
+      <span className="select-none font-mono text-[10.5px] text-[var(--color-text-faint)] opacity-0 transition-opacity group-hover:opacity-100">
         play
       </span>
     </button>

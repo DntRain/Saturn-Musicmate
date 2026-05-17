@@ -51,7 +51,7 @@ export function TrackList({
               onDoubleClick={() => onPlay(i)}
               className={clsx(
                 "group grid cursor-pointer grid-cols-[40px_1fr_1fr_60px_32px] items-center gap-3 rounded-md px-4 py-1.5 transition-colors",
-                isCurrent ? "bg-white/[0.06]" : "hover:bg-white/[0.04]",
+                isCurrent ? "bg-[var(--color-surface-2)]" : "hover:bg-[var(--color-surface-1)]",
               )}
             >
               <span className="text-center text-[12px] text-[var(--color-text-muted)]">
@@ -82,7 +82,7 @@ export function TrackList({
                 <span
                   className={clsx(
                     "truncate text-[13px]",
-                    isCurrent ? "text-[var(--color-accent)]" : "text-white",
+                    isCurrent ? "text-[var(--color-accent)]" : "text-[var(--color-text)]",
                   )}
                 >
                   {t.title}

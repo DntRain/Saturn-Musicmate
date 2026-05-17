@@ -8,7 +8,7 @@ const PLACEHOLDER = (
     strokeWidth="1.4"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className="h-1/3 w-1/3 text-white/30"
+    className="h-1/3 w-1/3 text-[var(--color-text-faint)]"
   >
     <path d="M9 18V5l12-2v13" />
     <circle cx="6" cy="18" r="3" />
@@ -43,7 +43,7 @@ export function CoverArt({
   return (
     <div
       className={clsx(
-        "grid place-items-center overflow-hidden bg-gradient-to-br from-white/10 to-white/5 shadow-lg shadow-black/30",
+        "grid place-items-center overflow-hidden bg-gradient-to-br from-[var(--color-surface-3)] to-[var(--color-surface-1)] shadow-lg shadow-[var(--color-shadow-soft)]",
         sizes[size],
         radii[rounded],
         className,

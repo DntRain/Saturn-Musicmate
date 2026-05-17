@@ -43,7 +43,7 @@ export function TrackActions({ tracks, player, playlists, size = "sm" }: TrackAc
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className={`${btnSize} grid place-items-center rounded-full text-[var(--color-text-dim)] transition-colors hover:bg-white/10 hover:text-white`}
+        className={`${btnSize} grid place-items-center rounded-full text-[var(--color-text-dim)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]`}
         aria-label="更多操作"
       >
         ⋯
@@ -55,7 +55,7 @@ export function TrackActions({ tracks, player, playlists, size = "sm" }: TrackAc
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.12 }}
-            className="absolute right-0 top-full z-50 mt-1 min-w-[180px] overflow-hidden rounded-lg border border-[var(--color-border)] bg-[#1a1a1a]/95 py-1 text-[12.5px] shadow-2xl backdrop-blur-xl"
+            className="absolute right-0 top-full z-50 mt-1 min-w-[180px] overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)]/95 py-1 text-[12.5px] shadow-2xl backdrop-blur-xl"
           >
             <MenuItem
               onClick={() => onAction(() => player.playNext(tracks))}
@@ -72,7 +72,7 @@ export function TrackActions({ tracks, player, playlists, size = "sm" }: TrackAc
             >
               <button
                 onClick={() => setShowPlaylists((v) => !v)}
-                className="flex w-full items-center justify-between px-3 py-2 text-left text-white transition-colors hover:bg-white/10"
+                className="flex w-full items-center justify-between px-3 py-2 text-left text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-2)]"
               >
                 <span>加入歌单</span>
                 <span className="text-[var(--color-text-dim)]">›</span>
@@ -84,7 +84,7 @@ export function TrackActions({ tracks, player, playlists, size = "sm" }: TrackAc
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -4 }}
                     transition={{ duration: 0.1 }}
-                    className="absolute right-full top-0 mr-1 min-w-[180px] max-h-[260px] overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[#1a1a1a]/95 py-1 shadow-2xl backdrop-blur-xl"
+                    className="absolute right-full top-0 mr-1 min-w-[180px] max-h-[260px] overflow-y-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)]/95 py-1 shadow-2xl backdrop-blur-xl"
                   >
                     {playlists.playlists.length === 0 && (
                       <div className="px-3 py-2 text-[var(--color-text-muted)]">
@@ -100,7 +100,7 @@ export function TrackActions({ tracks, player, playlists, size = "sm" }: TrackAc
                         label={p.name}
                       />
                     ))}
-                    <div className="my-1 border-t border-white/10" />
+                    <div className="my-1 border-t border-[var(--color-border)]" />
                     <MenuItem
                       onClick={() =>
                         onAction(async () => {
@@ -127,7 +127,7 @@ function MenuItem({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <button
       onClick={onClick}
-      className="block w-full px-3 py-2 text-left text-white transition-colors hover:bg-white/10"
+      className="block w-full px-3 py-2 text-left text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-2)]"
     >
       {label}
     </button>

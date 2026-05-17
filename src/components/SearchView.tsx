@@ -64,7 +64,7 @@ export function SearchView({
             </span>
           )}
         </p>
-        <div className="mt-5 flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-white/[0.04] px-4 py-2.5">
+        <div className="mt-5 flex items-center gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-1)] px-4 py-2.5">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-[var(--color-text-muted)]">
             <circle cx="11" cy="11" r="7" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -102,7 +102,7 @@ export function SearchView({
                     setQuery(q);
                     doSearch(q);
                   }}
-                  className="rounded-full border border-[var(--color-border)] bg-white/5 px-3 py-1.5 text-[12.5px] text-[var(--color-text-dim)] transition-colors hover:bg-white/10 hover:text-white"
+                  className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-1.5 text-[12.5px] text-[var(--color-text-dim)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]"
                 >
                   {q}
                 </button>
@@ -139,7 +139,7 @@ export function SearchView({
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.02 }}
-                className={`group flex items-center gap-3 rounded-md px-3 py-2 transition-colors hover:bg-white/[0.05] ${!playable ? "opacity-40" : ""}`}
+                className={`group flex items-center gap-3 rounded-md px-3 py-2 transition-colors hover:bg-[var(--color-surface-1)] ${!playable ? "opacity-40" : ""}`}
               >
                 <button
                   disabled={!playable}
@@ -150,7 +150,7 @@ export function SearchView({
                 >
                   <CoverArt src={r.cover_url} size="md" rounded="md" />
                   <div className="flex min-w-0 flex-1 flex-col leading-tight">
-                    <span className="truncate text-[13.5px] text-white">{r.title}</span>
+                    <span className="truncate text-[13.5px] text-[var(--color-text)]">{r.title}</span>
                     <span className="truncate text-[12px] text-[var(--color-text-dim)]">
                       {r.artist}
                       {r.album && (

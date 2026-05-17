@@ -9,6 +9,7 @@ const KEY_DEEPSEEK_KEY: &str = "deepseek_api_key";
 const KEY_DEEPSEEK_MODEL: &str = "deepseek_model";
 const KEY_QQ_API_BASE: &str = "qq_api_base";
 const KEY_QQ_COOKIES: &str = "qq_cookies";
+const KEY_THEME: &str = "theme";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Settings {
@@ -20,6 +21,8 @@ pub struct Settings {
     pub qq_api_base: String,
     #[serde(default)]
     pub qq_cookies: String,
+    #[serde(default)]
+    pub theme: String,
 }
 
 fn read_string<R: Runtime>(app: &AppHandle<R>, key: &str) -> String {
@@ -48,6 +51,7 @@ fn load(app: &AppHandle) -> Settings {
         deepseek_model: read_string(app, KEY_DEEPSEEK_MODEL),
         qq_api_base: read_string(app, KEY_QQ_API_BASE),
         qq_cookies: read_string(app, KEY_QQ_COOKIES),
+        theme: read_string(app, KEY_THEME),
     }
 }
 
@@ -132,6 +136,7 @@ pub async fn settings_save(app: AppHandle, settings: Settings) -> Result<Setting
     write_string(&app, KEY_DEEPSEEK_MODEL, settings.deepseek_model.trim())?;
     write_string(&app, KEY_QQ_API_BASE, settings.qq_api_base.trim())?;
     write_string(&app, KEY_QQ_COOKIES, settings.qq_cookies.trim())?;
+    write_string(&app, KEY_THEME, settings.theme.trim())?;
 
     let saved = load(&app);
     apply_env(&saved);

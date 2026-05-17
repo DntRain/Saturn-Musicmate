@@ -14,7 +14,29 @@ import { usePlayer } from "./state/player";
 import { usePlaylists } from "./state/playlists";
 import { useSidecar } from "./state/sidecar";
 import { api } from "./ipc";
-import type { HostContext, OnlineTrackContext, Track, ViewName } from "./types";
+import type { HostContext, OnlineTrackContext, ThemePreference, Track, ViewName } from "./types";
+
+const THEME_EVENT = "musicmate:theme-change";
+
+function resolveTheme(pref: ThemePreference | string): "dark" | "light" {
+  if (pref === "light") return "light";
+  if (pref === "system") {
+    return typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: light)").matches
+      ? "light"
+      : "dark";
+  }
+  return "dark";
+}
+
+function applyTheme(pref: ThemePreference | string) {
+  const resolved = resolveTheme(pref);
+  if (resolved === "light") {
+    document.documentElement.dataset.theme = "light";
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+}
 
 const AUTO_INTRO_DELAY_MS = 12_000;
 const LONG_PAUSE_DELAY_MS = 90_000;
@@ -76,6 +98,32 @@ export default function App() {
       return () => clearTimeout(t);
     }
   }, [player.state.error]);
+
+  useEffect(() => {
+    let pref: string = "";
+    api.settingsGet().then((s) => {
+      pref = s.theme ?? "";
+      applyTheme(pref);
+    }).catch(() => applyTheme(""));
+
+    const onChange = (e: Event) => {
+      const detail = (e as CustomEvent<{ theme: string }>).detail;
+      pref = detail?.theme ?? "";
+      applyTheme(pref);
+    };
+    window.addEventListener(THEME_EVENT, onChange);
+
+    const media = window.matchMedia("(prefers-color-scheme: light)");
+    const onMedia = () => {
+      if (pref === "" || pref === "system") applyTheme(pref);
+    };
+    media.addEventListener("change", onMedia);
+
+    return () => {
+      window.removeEventListener(THEME_EVENT, onChange);
+      media.removeEventListener("change", onMedia);
+    };
+  }, []);
 
   useEffect(() => {
     lastPositionRef.current = player.state.positionMs;
@@ -249,7 +297,7 @@ export default function App() {
     <div className="relative flex h-screen w-screen flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
       <div
         data-tauri-drag-region
-        className="fixed inset-x-0 top-0 z-30 h-7"
+        className="fixed inset-x-0 top-0 z-[60] h-7"
       />
       <main className="relative flex min-h-0 flex-1 flex-col">
         <AnimatePresence mode="wait">
@@ -322,7 +370,7 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-md bg-black/80 px-4 py-2 text-[12.5px] text-white shadow-lg backdrop-blur"
+            className="pointer-events-none fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-md bg-[var(--color-overlay-strong)] px-4 py-2 text-[12.5px] text-[var(--color-text)] shadow-lg backdrop-blur"
           >
             {toast}
           </motion.div>
@@ -334,7 +382,7 @@ export default function App() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="pointer-events-none fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-full bg-black/75 px-4 py-1.5 text-[12px] text-white shadow-lg backdrop-blur"
+            className="pointer-events-none fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-full bg-[var(--color-overlay-strong)] px-4 py-1.5 text-[12px] text-[var(--color-text)] shadow-lg backdrop-blur"
           >
             <span className="mr-2 inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--color-accent)]" />
             {sidecar.message || "在线服务启动中…"}
@@ -342,7 +390,7 @@ export default function App() {
         )}
       </AnimatePresence>
       {player.state.subtitle.active && player.state.subtitle.text && (
-        <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 max-w-2xl -translate-x-1/2 rounded-full bg-black/70 px-5 py-2 text-center text-[13px] text-white backdrop-blur">
+        <div className="pointer-events-none fixed bottom-24 left-1/2 z-40 max-w-2xl -translate-x-1/2 rounded-full bg-[var(--color-overlay)] px-5 py-2 text-center text-[13px] text-[var(--color-text)] backdrop-blur">
           {player.state.subtitle.text}
         </div>
       )}

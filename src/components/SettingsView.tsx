@@ -1,14 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 import { api } from "../ipc";
-import type { AppSettings } from "../types";
+import type { AppSettings, ThemePreference } from "../types";
+
+const THEME_EVENT = "musicmate:theme-change";
 
 const DEFAULT_SETTINGS: AppSettings = {
   deepseek_api_key: "",
   deepseek_model: "",
   qq_api_base: "",
   qq_cookies: "",
+  theme: "",
 };
+
+const THEME_OPTIONS: { value: ThemePreference; label: string; hint: string }[] = [
+  { value: "system", label: "跟随系统", hint: "根据系统外观自动切换" },
+  { value: "dark", label: "深色", hint: "默认外观" },
+  { value: "light", label: "浅色", hint: "" },
+];
 
 type Status =
   | { kind: "idle" }
@@ -48,10 +57,18 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
     settings.deepseek_api_key !== original.deepseek_api_key ||
     settings.deepseek_model !== original.deepseek_model ||
     settings.qq_api_base !== original.qq_api_base ||
-    settings.qq_cookies !== original.qq_cookies;
+    settings.qq_cookies !== original.qq_cookies ||
+    settings.theme !== original.theme;
 
   const update = useCallback(<K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const onPickTheme = useCallback((value: ThemePreference) => {
+    setSettings((prev) => ({ ...prev, theme: value }));
+    window.dispatchEvent(
+      new CustomEvent(THEME_EVENT, { detail: { theme: value } }),
+    );
   }, []);
 
   const onSave = useCallback(async () => {
@@ -77,6 +94,9 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
   const onReset = useCallback(() => {
     setSettings(original);
     setStatus({ kind: "idle" });
+    window.dispatchEvent(
+      new CustomEvent(THEME_EVENT, { detail: { theme: original.theme ?? "" } }),
+    );
   }, [original]);
 
   const onTestDeepseek = useCallback(async () => {
@@ -125,7 +145,7 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center text-[13px] text-white/40">
+      <div className="flex h-full items-center justify-center text-[13px] text-[var(--color-text-faint)]">
         正在加载设置…
       </div>
     );
@@ -135,24 +155,52 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
     <div className="flex h-full flex-col overflow-y-auto px-10 py-12">
       <div className="mx-auto w-full max-w-2xl space-y-10">
         <header>
-          <h1 className="font-serif text-[34px] font-normal tracking-[0.005em] text-white">
+          <h1 className="font-serif text-[34px] font-normal tracking-[0.005em] text-[var(--color-text)]">
             设置
           </h1>
-          <p className="mt-1 text-[13px] text-white/45">
+          <p className="mt-1 text-[13px] text-[var(--color-text-dim)]">
             令牌和 Cookies 仅保存在本机，不会上传任何远程服务。
           </p>
         </header>
 
+        <Section title="外观" hint="主题切换会立即预览，点保存后持久化。">
+          <div className="flex flex-wrap gap-2">
+            {THEME_OPTIONS.map((opt) => {
+              const active = (settings.theme || "dark") === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onPickTheme(opt.value)}
+                  className={clsx(
+                    "flex flex-col items-start gap-0.5 rounded-md border px-3 py-2 text-left transition-colors",
+                    active
+                      ? "border-[var(--color-accent)]/50 bg-[var(--color-accent)]/12 text-[var(--color-text)]"
+                      : "border-[var(--color-border)] bg-[var(--color-surface-1)] text-[var(--color-text-dim)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]",
+                  )}
+                >
+                  <span className="text-[12.5px] font-medium">{opt.label}</span>
+                  {opt.hint && (
+                    <span className="text-[11px] text-[var(--color-text-muted)]">
+                      {opt.hint}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+
         <Section title="资料库" hint="选择本地音乐文件夹，Musicmate 会扫描其中的音频文件。">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[12.5px] text-white/55">
+            <p className="text-[12.5px] text-[var(--color-text-dim)]">
               支持 mp3 / flac / wav / m4a / ogg / opus 等常见格式。
             </p>
             <button
               type="button"
               onClick={() => onPickFolder?.()}
               disabled={!onPickFolder}
-              className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/80 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-1.5 text-[12px] text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] disabled:opacity-40"
             >
               打开音乐文件夹
             </button>
@@ -167,14 +215,14 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
                 value={settings.deepseek_api_key}
                 onChange={(e) => update("deepseek_api_key", e.target.value)}
                 placeholder="sk-..."
-                className="w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 pr-16 text-[13px] text-white outline-none transition-colors focus:border-white/30"
+                className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-2 pr-16 text-[13px] text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-border-strong)]"
                 autoComplete="off"
                 spellCheck={false}
               />
               <button
                 type="button"
                 onClick={() => setShowKey((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-[11px] text-white/50 hover:text-white"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-2 py-1 text-[11px] text-[var(--color-text-dim)] hover:text-[var(--color-text)]"
               >
                 {showKey ? "隐藏" : "显示"}
               </button>
@@ -186,7 +234,7 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
               value={settings.deepseek_model}
               onChange={(e) => update("deepseek_model", e.target.value)}
               placeholder="deepseek-v4-pro"
-              className="w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-[13px] text-white outline-none transition-colors focus:border-white/30"
+              className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-2 text-[13px] text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-border-strong)]"
               autoComplete="off"
               spellCheck={false}
             />
@@ -196,24 +244,24 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
               type="button"
               onClick={onTestDeepseek}
               disabled={testing || !settings.deepseek_api_key.trim()}
-              className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/80 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-1.5 text-[12px] text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] disabled:opacity-40"
             >
               {testing ? "测试中…" : "测试连接"}
             </button>
           </div>
         </Section>
 
-        <Section title="QQ 音乐" hint="本地播放无需 Cookies；在线搜索 / VIP 试听需要登录 QQ 账号。">
+        <Section title="QQ 音乐" hint="本地播放无需 Cookies；在线搜索 / VIP 试听需要 qq-music-api 服务 + QQ Cookies。">
           <Field
             label="服务地址（可选）"
-            hint="留空使用内置 sidecar (http://127.0.0.1:3200)。"
+            hint="留空：仅当本机能跑 Node 且仓库带 vendor/qq-music-api 时自动启动。否则填入你自部署的 qq-music-api 地址。"
           >
             <input
               type="text"
               value={settings.qq_api_base}
               onChange={(e) => update("qq_api_base", e.target.value)}
               placeholder="http://127.0.0.1:3200"
-              className="w-full rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-[13px] text-white outline-none transition-colors focus:border-white/30"
+              className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-2 text-[13px] text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-border-strong)]"
               autoComplete="off"
               spellCheck={false}
             />
@@ -228,8 +276,8 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
               placeholder="uin=...; qm_keyst=..."
               rows={4}
               className={clsx(
-                "w-full resize-none rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 font-mono text-[12px] text-white outline-none transition-colors focus:border-white/30",
-                !showCookie && settings.qq_cookies && "text-transparent [text-shadow:0_0_8px_rgba(255,255,255,0.55)]",
+                "w-full resize-none rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-2 font-mono text-[12px] text-[var(--color-text)] outline-none transition-colors focus:border-[var(--color-border-strong)]",
+                !showCookie && settings.qq_cookies && "text-transparent [text-shadow:0_0_8px_var(--color-text-strong)]",
               )}
               spellCheck={false}
             />
@@ -237,7 +285,7 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
               <button
                 type="button"
                 onClick={() => setShowCookie((v) => !v)}
-                className="text-[11px] text-white/50 hover:text-white"
+                className="text-[11px] text-[var(--color-text-dim)] hover:text-[var(--color-text)]"
               >
                 {showCookie ? "隐藏内容" : "显示内容"}
               </button>
@@ -246,7 +294,7 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
                   type="button"
                   onClick={onOpenLogin}
                   disabled={loginBusy}
-                  className="rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12px] text-white/80 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-40"
+                  className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-1.5 text-[12px] text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] disabled:opacity-40"
                 >
                   登录 QQ 音乐
                 </button>
@@ -254,7 +302,7 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
                   type="button"
                   onClick={onImportCookies}
                   disabled={loginBusy}
-                  className="rounded-md border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/15 px-3 py-1.5 text-[12px] text-white transition-colors hover:bg-[var(--color-accent)]/25 disabled:opacity-40"
+                  className="rounded-md border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/15 px-3 py-1.5 text-[12px] text-[var(--color-text)] transition-colors hover:bg-[var(--color-accent)]/25 disabled:opacity-40"
                 >
                   导入 Cookies
                 </button>
@@ -263,14 +311,14 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
           </Field>
         </Section>
 
-        <footer className="sticky bottom-0 -mx-10 mt-4 flex items-center justify-between gap-4 border-t border-white/5 bg-[var(--color-bg)]/95 px-10 py-4 backdrop-blur">
+        <footer className="sticky bottom-0 -mx-10 mt-4 flex items-center justify-between gap-4 border-t border-[var(--color-border)] bg-[var(--color-bg)]/95 px-10 py-4 backdrop-blur">
           <StatusBar status={status} />
           <div className="flex gap-2">
             <button
               type="button"
               onClick={onReset}
               disabled={!dirty || saving}
-              className="rounded-md border border-white/10 bg-white/[0.04] px-4 py-2 text-[12.5px] text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-30"
+              className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-4 py-2 text-[12.5px] text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] disabled:opacity-30"
             >
               撤销
             </button>
@@ -278,7 +326,7 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
               type="button"
               onClick={onSave}
               disabled={!dirty || saving}
-              className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-[12.5px] font-medium text-white transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-30"
+              className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-[12.5px] font-medium text-[var(--color-text)] transition-colors hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-30"
             >
               {saving ? "保存中…" : "保存"}
             </button>
@@ -301,10 +349,10 @@ function Section({
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-[15px] font-medium tracking-tight text-white">{title}</h2>
-        {hint && <p className="mt-1 text-[12px] text-white/40">{hint}</p>}
+        <h2 className="text-[15px] font-medium tracking-tight text-[var(--color-text)]">{title}</h2>
+        {hint && <p className="mt-1 text-[12px] text-[var(--color-text-faint)]">{hint}</p>}
       </div>
-      <div className="space-y-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+      <div className="space-y-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-1)] p-5">
         {children}
       </div>
     </section>
@@ -323,8 +371,8 @@ function Field({
   return (
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between gap-3">
-        <label className="text-[12.5px] font-medium text-white/80">{label}</label>
-        {hint && <span className="text-[11px] text-white/35">{hint}</span>}
+        <label className="text-[12.5px] font-medium text-[var(--color-text-strong)]">{label}</label>
+        {hint && <span className="text-[11px] text-[var(--color-text-faint)]">{hint}</span>}
       </div>
       {children}
     </div>
@@ -333,14 +381,14 @@ function Field({
 
 function StatusBar({ status }: { status: Status }) {
   if (status.kind === "idle") {
-    return <span className="text-[11.5px] text-white/35">变更后点保存生效</span>;
+    return <span className="text-[11.5px] text-[var(--color-text-faint)]">变更后点保存生效</span>;
   }
   const cls =
     status.kind === "success"
       ? "text-emerald-300/90"
       : status.kind === "error"
         ? "text-red-300/90"
-        : "text-white/60";
+        : "text-[var(--color-text-dim)]";
   return (
     <span className={clsx("max-w-md truncate text-[11.5px]", cls)} title={status.text}>
       {status.text}

@@ -34,7 +34,7 @@ export function PlaylistsView({ player, playlists }: PlaylistsViewProps) {
           <h1 className="text-xl font-bold tracking-tight">歌单</h1>
           <button
             onClick={onCreate}
-            className="rounded-md bg-white/10 px-2.5 py-1 text-[12px] text-white transition-colors hover:bg-white/15"
+            className="rounded-md bg-[var(--color-surface-2)] px-2.5 py-1 text-[12px] text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-3)]"
           >
             ＋ 新建
           </button>
@@ -53,12 +53,12 @@ export function PlaylistsView({ player, playlists }: PlaylistsViewProps) {
                   className={clsx(
                     "flex w-full items-center justify-between gap-2 rounded-md px-3 py-2 text-left transition-colors",
                     selected?.id === p.id
-                      ? "bg-white/[0.08]"
-                      : "hover:bg-white/[0.04]",
+                      ? "bg-[var(--color-surface-2)]"
+                      : "hover:bg-[var(--color-surface-1)]",
                   )}
                 >
                   <div className="flex min-w-0 flex-col leading-tight">
-                    <span className="truncate text-[13px] text-white">{p.name}</span>
+                    <span className="truncate text-[13px] text-[var(--color-text)]">{p.name}</span>
                     <span className="text-[11.5px] text-[var(--color-text-dim)]">
                       {p.tracks.length} 首
                     </span>
@@ -86,7 +86,7 @@ export function PlaylistsView({ player, playlists }: PlaylistsViewProps) {
                 <button
                   onClick={() => onPlayAll(selected)}
                   disabled={selected.tracks.length === 0}
-                  className="rounded-md bg-[var(--color-accent)]/90 px-4 py-1.5 text-[13px] font-medium text-white transition-colors hover:bg-[var(--color-accent)] disabled:opacity-50"
+                  className="rounded-md bg-[var(--color-accent)]/90 px-4 py-1.5 text-[13px] font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-accent)] disabled:opacity-50"
                 >
                   ▶ 播放全部
                 </button>
@@ -95,7 +95,7 @@ export function PlaylistsView({ player, playlists }: PlaylistsViewProps) {
                     const name = window.prompt("重命名歌单", selected.name);
                     if (name) await playlists.rename(selected.id, name);
                   }}
-                  className="rounded-md bg-white/10 px-3 py-1.5 text-[12.5px] text-white transition-colors hover:bg-white/15"
+                  className="rounded-md bg-[var(--color-surface-2)] px-3 py-1.5 text-[12.5px] text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-3)]"
                 >
                   重命名
                 </button>
@@ -106,7 +106,7 @@ export function PlaylistsView({ player, playlists }: PlaylistsViewProps) {
                       setSelectedId(null);
                     }
                   }}
-                  className="rounded-md bg-white/10 px-3 py-1.5 text-[12.5px] text-white transition-colors hover:bg-white/15"
+                  className="rounded-md bg-[var(--color-surface-2)] px-3 py-1.5 text-[12.5px] text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-3)]"
                 >
                   删除
                 </button>

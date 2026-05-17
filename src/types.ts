@@ -63,11 +63,14 @@ export interface SpectrumEvent {
 
 export type ViewName = "library" | "playlists" | "search" | "now-playing" | "host" | "settings";
 
+export type ThemePreference = "" | "dark" | "light" | "system";
+
 export interface AppSettings {
   deepseek_api_key: string;
   deepseek_model: string;
   qq_api_base: string;
   qq_cookies: string;
+  theme: ThemePreference;
 }
 
 export interface SettingsSaveOutcome {

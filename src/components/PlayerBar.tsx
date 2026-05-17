@@ -16,11 +16,11 @@ export function PlayerBar({ player, onOpenNowPlaying }: { player: PlayerApi; onO
     <footer className="glass flex h-20 shrink-0 items-center gap-4 border-t border-[var(--color-border)] px-4">
       <button
         onClick={onOpenNowPlaying}
-        className="flex min-w-0 flex-1 items-center gap-3 rounded-md p-1 text-left transition-colors hover:bg-white/5"
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-md p-1 text-left transition-colors hover:bg-[var(--color-surface-1)]"
       >
         <CoverArt src={state.cover} size="md" rounded="md" />
         <div className="flex min-w-0 flex-col leading-tight">
-          <span className="truncate text-[13px] text-white">
+          <span className="truncate text-[13px] text-[var(--color-text)]">
             {track?.title ?? "未选择曲目"}
           </span>
           <span className="truncate text-[11.5px] text-[var(--color-text-dim)]">
@@ -36,7 +36,7 @@ export function PlayerBar({ player, onOpenNowPlaying }: { player: PlayerApi; onO
           </IconButton>
           <button
             onClick={() => toggle()}
-            className="grid h-9 w-9 place-items-center rounded-full bg-white text-black transition-transform hover:scale-105 active:scale-95"
+            className="grid h-9 w-9 place-items-center rounded-full bg-[var(--color-text)] text-[var(--color-bg)] transition-transform hover:scale-105 active:scale-95"
             title={state.playing ? "暂停" : "播放"}
           >
             {state.playing ? (
@@ -53,9 +53,9 @@ export function PlayerBar({ player, onOpenNowPlaying }: { player: PlayerApi; onO
           <span className="w-10 text-right text-[10.5px] tabular-nums text-[var(--color-text-muted)]">
             {formatMs(state.positionMs)}
           </span>
-          <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/10">
+          <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-[var(--color-surface-2)]">
             <div
-              className="absolute inset-y-0 left-0 bg-white/80 transition-[width] duration-300"
+              className="absolute inset-y-0 left-0 bg-[var(--color-text-strong)] transition-[width] duration-300"
               style={{ width: `${clampPct(progress)}%` }}
             />
           </div>
@@ -102,7 +102,7 @@ function IconButton({
     <button
       onClick={onClick}
       title={title}
-      className="grid h-8 w-8 place-items-center rounded-full text-[var(--color-text-dim)] transition-colors hover:bg-white/5 hover:text-white"
+      className="grid h-8 w-8 place-items-center rounded-full text-[var(--color-text-dim)] transition-colors hover:bg-[var(--color-surface-1)] hover:text-[var(--color-text)]"
     >
       {children}
     </button>

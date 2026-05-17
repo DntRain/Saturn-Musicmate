@@ -116,14 +116,14 @@ export function Sidebar({
               className={clsx(
                 "relative flex items-center gap-3 rounded-md px-3 py-1.5 text-left text-[13px] transition-colors",
                 selected
-                  ? "text-white"
-                  : "text-[var(--color-text-dim)] hover:text-white",
+                  ? "text-[var(--color-text)]"
+                  : "text-[var(--color-text-dim)] hover:text-[var(--color-text)]",
               )}
             >
               {selected && (
                 <motion.div
                   layoutId="sidebar-active"
-                  className="absolute inset-0 rounded-md bg-white/10"
+                  className="absolute inset-0 rounded-md bg-[var(--color-surface-2)]"
                   transition={{ type: "spring", stiffness: 380, damping: 32 }}
                 />
               )}
@@ -137,7 +137,7 @@ export function Sidebar({
       <div className="mt-auto flex flex-col gap-2 px-3 pt-4">
         <button
           onClick={onPickFolder}
-          className="w-full rounded-md border border-[var(--color-border)] bg-white/5 px-3 py-2 text-[12px] text-[var(--color-text-dim)] transition-colors hover:bg-white/10 hover:text-white"
+          className="w-full rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-3 py-2 text-[12px] text-[var(--color-text-dim)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]"
         >
           打开音乐文件夹
         </button>
@@ -145,20 +145,20 @@ export function Sidebar({
           <button
             onClick={handleLogin}
             disabled={loginBusy}
-            className="flex-1 rounded-md border border-[var(--color-border)] bg-white/5 px-2 py-2 text-[11.5px] text-[var(--color-text-dim)] transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+            className="flex-1 rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-2 py-2 text-[11.5px] text-[var(--color-text-dim)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] disabled:opacity-50"
           >
             登录 QQ 音乐
           </button>
           <button
             onClick={handleImport}
             disabled={loginBusy}
-            className="flex-1 rounded-md border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/15 px-2 py-2 text-[11.5px] text-white transition-colors hover:bg-[var(--color-accent)]/25 disabled:opacity-50"
+            className="flex-1 rounded-md border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/15 px-2 py-2 text-[11.5px] text-[var(--color-text)] transition-colors hover:bg-[var(--color-accent)]/25 disabled:opacity-50"
           >
             导入 Cookies
           </button>
         </div>
         {loginHint && (
-          <div className="rounded-md bg-black/30 px-2 py-1.5 text-[11px] leading-snug text-[var(--color-text-dim)]">
+          <div className="rounded-md bg-[var(--color-surface-1)] px-2 py-1.5 text-[11px] leading-snug text-[var(--color-text-dim)]">
             {loginHint}
           </div>
         )}

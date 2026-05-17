@@ -94,7 +94,7 @@ export function CommandOverlay({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18 }}
       onClick={onClose}
-      className="fixed inset-0 z-[60] grid place-items-center bg-black/55 backdrop-blur-2xl"
+      className="fixed inset-0 z-[60] grid place-items-center bg-[var(--color-overlay)] backdrop-blur-2xl"
     >
       <WindowControls />
       <motion.div
@@ -118,8 +118,8 @@ export function CommandOverlay({
                 className={clsx(
                   "flex h-32 w-36 flex-col items-center justify-center gap-3 rounded-2xl border transition-all",
                   selected
-                    ? "border-white/30 bg-white/12 text-white shadow-xl shadow-black/40"
-                    : "border-white/10 bg-white/[0.04] text-white/75 hover:border-white/25 hover:bg-white/10 hover:text-white",
+                    ? "border-[var(--color-border-strong)] bg-[var(--color-surface-3)] text-[var(--color-text)] shadow-xl shadow-[var(--color-shadow)]"
+                    : "border-[var(--color-border)] bg-[var(--color-surface-1)] text-[var(--color-text-strong)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]",
                 )}
               >
                 <span>{item.icon}</span>
@@ -129,7 +129,7 @@ export function CommandOverlay({
           })}
         </div>
 
-        <div className="text-[11.5px] tracking-[0.18em] text-white/30">
+        <div className="text-[11.5px] tracking-[0.18em] text-[var(--color-text-faint)]">
           按 ESC 关闭
         </div>
       </motion.div>
@@ -185,10 +185,10 @@ function WinBtn({
       aria-label={label}
       title={label}
       className={clsx(
-        "grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-white/[0.06] text-white/70 transition-colors hover:text-white",
+        "grid h-7 w-7 place-items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text-strong)] transition-colors hover:text-[var(--color-text)]",
         accent === "close"
           ? "hover:border-red-500/60 hover:bg-red-500/30"
-          : "hover:bg-white/15",
+          : "hover:bg-[var(--color-surface-3)]",
       )}
     >
       {children}

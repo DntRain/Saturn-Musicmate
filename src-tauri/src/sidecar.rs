@@ -109,16 +109,20 @@ fn pids_on_port(port: u16) -> Vec<i32> {
 }
 
 fn run(app: &AppHandle) -> Result<(), String> {
+    if has_remote_override() {
+        emit(app, "ready", "使用自定义在线服务地址");
+        return Ok(());
+    }
+
     if port_in_use(QQ_API_PORT) {
         emit(app, "ready", "已检测到 QQ 音乐服务在 3200 端口运行");
         return Ok(());
     }
 
-    let vendor = locate_vendor().ok_or_else(|| {
-        format!(
-            "未找到 {VENDOR_DIR}/。请先 git clone Rain120/qq-music-api 到该目录"
-        )
-    })?;
+    let Some(vendor) = locate_vendor() else {
+        emit(app, "idle", "");
+        return Ok(());
+    };
 
     if !vendor.join("node_modules").is_dir() {
         emit(app, "installing", "首次启动：正在安装在线服务依赖…");
@@ -155,6 +159,18 @@ fn emit(app: &AppHandle, state: &'static str, message: impl Into<String>) {
             message: message.into(),
         },
     );
+}
+
+fn has_remote_override() -> bool {
+    let Ok(raw) = std::env::var("MUSICMATE_QQ_API_BASE") else {
+        return false;
+    };
+    let trimmed = raw.trim().trim_end_matches('/');
+    if trimmed.is_empty() {
+        return false;
+    }
+    let default_url = format!("http://127.0.0.1:{QQ_API_PORT}");
+    trimmed != default_url && trimmed != default_url.trim_end_matches('/')
 }
 
 fn locate_vendor() -> Option<PathBuf> {

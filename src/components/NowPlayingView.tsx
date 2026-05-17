@@ -21,7 +21,7 @@ export function NowPlayingView({
   const [pane, setPane] = useState<RightPane>("lyrics");
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_18%_18%,rgba(250,45,72,0.18),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(20,184,166,0.12),transparent_30%),linear-gradient(135deg,#141416_0%,#0c0c0e_48%,#181115_100%)]">
+    <div className="relative flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_18%_18%,var(--color-accent-soft),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(20,184,166,0.12),transparent_30%),linear-gradient(135deg,var(--color-bg-grad-1)_0%,var(--color-bg-grad-2)_48%,var(--color-bg-grad-3)_100%)]">
       <Backdrop cover={state.cover} />
       {onBack && (
         <button
@@ -29,7 +29,7 @@ export function NowPlayingView({
           onClick={onBack}
           aria-label="收起"
           title="收起"
-          className="absolute left-5 top-3 z-20 grid h-8 w-8 place-items-center rounded-full border border-white/10 bg-white/[0.06] text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+          className="absolute left-5 top-9 z-40 grid h-8 w-8 place-items-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-2)] text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-3)] hover:text-[var(--color-text)]"
         >
           <svg
             viewBox="0 0 24 24"
@@ -53,7 +53,7 @@ export function NowPlayingView({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <CoverArt src={state.cover} size="xl" rounded="xl" className="shadow-2xl shadow-black/60" />
+            <CoverArt src={state.cover} size="xl" rounded="xl" className="shadow-2xl shadow-[var(--color-shadow)]" />
           </motion.div>
 
           <div className="flex w-full max-w-sm flex-col items-center gap-1 text-center">
@@ -79,7 +79,7 @@ export function NowPlayingView({
               </IconBtn>
               <button
                 onClick={() => toggle()}
-                className="grid h-14 w-14 place-items-center rounded-full bg-white text-black transition-transform hover:scale-105 active:scale-95"
+                className="grid h-14 w-14 place-items-center rounded-full bg-[var(--color-text)] text-[var(--color-bg)] transition-transform hover:scale-105 active:scale-95"
               >
                 {state.playing ? (
                   <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
@@ -95,7 +95,7 @@ export function NowPlayingView({
         </div>
 
         <div className="flex min-h-0 flex-col items-stretch gap-3">
-          <div className="flex shrink-0 gap-1 self-start rounded-lg bg-white/5 p-1">
+          <div className="flex shrink-0 gap-1 self-start rounded-lg bg-[var(--color-surface-1)] p-1">
             {(["lyrics", "queue", "comments"] as RightPane[]).map((k) => (
               <button
                 key={k}
@@ -103,8 +103,8 @@ export function NowPlayingView({
                 className={clsx(
                   "rounded-md px-3 py-1 text-[12.5px] transition-colors",
                   pane === k
-                    ? "bg-white/10 text-white"
-                    : "text-[var(--color-text-dim)] hover:text-white",
+                    ? "bg-[var(--color-surface-2)] text-[var(--color-text)]"
+                    : "text-[var(--color-text-dim)] hover:text-[var(--color-text)]",
                 )}
               >
                 {k === "lyrics"
@@ -145,7 +145,7 @@ function Backdrop({ cover }: { cover: string | null }) {
         transition={{ duration: 0.6 }}
         className="absolute inset-0"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(250,45,72,0.16),transparent_32%),radial-gradient(circle_at_78%_16%,rgba(20,184,166,0.10),transparent_30%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,var(--color-accent-soft),transparent_32%),radial-gradient(circle_at_78%_16%,rgba(20,184,166,0.10),transparent_30%)]" />
         {cover && (
           <img
             src={cover}
@@ -210,10 +210,10 @@ function Progress({ positionMs, durationMs }: { positionMs: number; durationMs: 
           seekable ? "cursor-pointer" : "cursor-default",
         )}
       >
-        <div className="relative h-[3px] w-full overflow-hidden rounded-full bg-white/10">
+        <div className="relative h-[3px] w-full overflow-hidden rounded-full bg-[var(--color-surface-2)]">
           <div
             className={clsx(
-              "absolute inset-y-0 left-0 bg-white/85",
+              "absolute inset-y-0 left-0 bg-[var(--color-text-strong)]",
               dragMs == null && "transition-[width] duration-200",
             )}
             style={{ width: `${pct}%` }}
@@ -222,7 +222,7 @@ function Progress({ positionMs, durationMs }: { positionMs: number; durationMs: 
         {seekable && (
           <div
             className={clsx(
-              "pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow transition-opacity",
+              "pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--color-text)] shadow transition-opacity",
               dragMs == null ? "opacity-0 group-hover:opacity-100" : "opacity-100",
             )}
             style={{ left: `${pct}%` }}
@@ -240,7 +240,7 @@ function IconBtn({ children, onClick }: { children: React.ReactNode; onClick: ()
   return (
     <button
       onClick={onClick}
-      className="grid h-10 w-10 place-items-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+      className="grid h-10 w-10 place-items-center rounded-full text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)]"
     >
       {children}
     </button>
@@ -266,7 +266,7 @@ function QueuePanel({ player }: { player: PlayerApi }) {
               key={t.path + i}
               className={clsx(
                 "group flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
-                isCurrent ? "bg-white/[0.08]" : "hover:bg-white/[0.04]",
+                isCurrent ? "bg-[var(--color-surface-2)]" : "hover:bg-[var(--color-surface-1)]",
               )}
             >
               <button
@@ -287,7 +287,7 @@ function QueuePanel({ player }: { player: PlayerApi }) {
                   <span
                     className={clsx(
                       "truncate text-[13.5px]",
-                      isCurrent ? "text-[var(--color-accent)]" : "text-white",
+                      isCurrent ? "text-[var(--color-accent)]" : "text-[var(--color-text)]",
                     )}
                   >
                     {t.title}
@@ -299,7 +299,7 @@ function QueuePanel({ player }: { player: PlayerApi }) {
               </button>
               <button
                 onClick={() => removeFromQueue(i)}
-                className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[var(--color-text-dim)] opacity-0 transition-colors hover:bg-white/10 hover:text-white group-hover:opacity-100"
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[var(--color-text-dim)] opacity-0 transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text)] group-hover:opacity-100"
                 aria-label="移除"
               >
                 ✕
@@ -326,12 +326,12 @@ function CommentsPanel({ comments }: { comments: string[] }) {
         {comments.map((comment, i) => (
           <li
             key={`${comment}-${i}`}
-            className="rounded-md border border-white/10 bg-white/[0.04] px-4 py-3"
+            className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface-1)] px-4 py-3"
           >
             <div className="mb-2 text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--color-accent)]">
               热评 {String(i + 1).padStart(2, "0")}
             </div>
-            <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-white/85">
+            <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-[var(--color-text-strong)]">
               {comment}
             </p>
           </li>
@@ -483,7 +483,7 @@ const LyricsPanel = memo(function LyricsPanel({
                 }
               }}
               className={clsx(
-                "cursor-pointer select-none break-words text-left font-semibold leading-snug tracking-normal text-white transition-[opacity,font-size,margin] duration-500 ease-out",
+                "cursor-pointer select-none break-words text-left font-semibold leading-snug tracking-normal text-[var(--color-text)] transition-[opacity,font-size,margin] duration-500 ease-out",
                 isActive ? "my-[8px] text-[22px]" : "text-[18px]",
               )}
               style={{ opacity, willChange: "opacity" }}
