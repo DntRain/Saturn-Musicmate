@@ -427,6 +427,34 @@ const LyricsPanel = memo(function LyricsPanel({
     };
   }, [synced]);
 
+  const baseCenter = activeIndex >= 0 ? activeIndex : 0;
+  const centerIndex = Math.max(
+    0,
+    Math.min(synced.length - 1, baseCenter + browseOffset),
+  );
+
+  const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [translateY, setTranslateY] = useState(0);
+  const [measureTick, setMeasureTick] = useState(0);
+
+  useLayoutEffect(() => {
+    if (synced.length === 0) return;
+    const container = containerRef.current;
+    const active = lineRefs.current[centerIndex];
+    if (!container || !active) return;
+    setTranslateY(container.clientHeight / 2 - (active.offsetTop + active.offsetHeight / 2));
+  }, [centerIndex, synced, measureTick]);
+
+  useEffect(() => {
+    if (synced.length === 0) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const obs = new ResizeObserver(() => setMeasureTick((t) => t + 1));
+    obs.observe(container);
+    lineRefs.current.forEach((el) => el && obs.observe(el));
+    return () => obs.disconnect();
+  }, [synced]);
+
   if (synced.length === 0) {
     const lines = raw.split("\n").filter((l) => l.trim());
     if (lines.length === 0) {
@@ -451,32 +479,6 @@ const LyricsPanel = memo(function LyricsPanel({
       </div>
     );
   }
-
-  const baseCenter = activeIndex >= 0 ? activeIndex : 0;
-  const centerIndex = Math.max(
-    0,
-    Math.min(synced.length - 1, baseCenter + browseOffset),
-  );
-
-  const lineRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [translateY, setTranslateY] = useState(0);
-  const [measureTick, setMeasureTick] = useState(0);
-
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    const active = lineRefs.current[centerIndex];
-    if (!container || !active) return;
-    setTranslateY(container.clientHeight / 2 - (active.offsetTop + active.offsetHeight / 2));
-  }, [centerIndex, synced, measureTick]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const obs = new ResizeObserver(() => setMeasureTick((t) => t + 1));
-    obs.observe(container);
-    lineRefs.current.forEach((el) => el && obs.observe(el));
-    return () => obs.disconnect();
-  }, [synced]);
 
   return (
     <div
