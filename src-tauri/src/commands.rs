@@ -120,10 +120,7 @@ pub async fn scan_library(folder: String) -> Result<Vec<Track>, String> {
 }
 
 #[tauri::command]
-pub fn set_playlist(
-    state: tauri::State<'_, AppState>,
-    paths: Vec<String>,
-) -> Result<(), String> {
+pub fn set_playlist(state: tauri::State<'_, AppState>, paths: Vec<String>) -> Result<(), String> {
     let paths: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
     send_command(&state, Command::SetPlaylist(paths))
 }
@@ -162,10 +159,7 @@ pub fn seek(state: tauri::State<'_, AppState>, position_ms: u64) -> Result<(), S
 }
 
 #[tauri::command]
-pub fn queue_append(
-    state: tauri::State<'_, AppState>,
-    paths: Vec<String>,
-) -> Result<(), String> {
+pub fn queue_append(state: tauri::State<'_, AppState>, paths: Vec<String>) -> Result<(), String> {
     let paths: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
     send_command(&state, Command::QueueAppend(paths))
 }
@@ -180,10 +174,7 @@ pub fn queue_insert_next(
 }
 
 #[tauri::command]
-pub fn queue_remove_at(
-    state: tauri::State<'_, AppState>,
-    index: usize,
-) -> Result<(), String> {
+pub fn queue_remove_at(state: tauri::State<'_, AppState>, index: usize) -> Result<(), String> {
     send_command(&state, Command::QueueRemoveAt(index))
 }
 
@@ -206,13 +197,25 @@ pub async fn get_lyrics(path: String) -> Result<Lyrics, String> {
 pub async fn search_online(
     query: String,
     limit: usize,
+    include_play_url: Option<bool>,
 ) -> Result<Vec<OnlineTrackContext>, String> {
-    blocking_task(move || online::search_contexts(&query, limit.max(1))).await
+    blocking_task(move || {
+        online::search_contexts(&query, limit.max(1), include_play_url.unwrap_or(true))
+    })
+    .await
 }
 
 #[tauri::command]
 pub async fn fetch_online_lyrics(provider: String, provider_id: String) -> Result<Lyrics, String> {
     blocking_task(move || online::fetch_lyrics(&provider, &provider_id)).await
+}
+
+#[tauri::command]
+pub async fn resolve_online_play_url(
+    provider: String,
+    provider_id: String,
+) -> Result<String, String> {
+    blocking_task(move || online::resolve_play_url(&provider, &provider_id)).await
 }
 
 #[tauri::command]
@@ -245,10 +248,7 @@ pub fn play_online(
 }
 
 #[tauri::command]
-pub async fn generate_host_line(
-    app: AppHandle,
-    context: HostContext,
-) -> Result<String, String> {
+pub async fn generate_host_line(app: AppHandle, context: HostContext) -> Result<String, String> {
     blocking_task(move || ai::generate_line(Some(&app), &context)).await
 }
 

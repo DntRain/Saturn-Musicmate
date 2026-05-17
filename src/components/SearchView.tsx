@@ -31,6 +31,7 @@ export function SearchView({
   playlists,
 }: SearchViewProps) {
   const [loading, setLoading] = useState(false);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export function SearchView({
     setError(null);
     setLoading(true);
     try {
-      const list = await api.searchOnline(q, 50);
+      const list = await api.searchOnline(q, 30, false);
       setResults(list);
     } catch (e) {
       setError(String(e));
@@ -118,8 +119,10 @@ export function SearchView({
 
         <div className="flex flex-col">
           {results.map((r, i) => {
-            const playable = !!r.play_url;
-            const track: Track | null = playable && r.play_url
+            const resultId = r.provider_id ?? `${r.provider}:${r.title}:${i}`;
+            const canResolve = !!r.provider_id;
+            const busyResolving = resolvingId === resultId;
+            const track: Track | null = r.play_url
               ? {
                   path: r.play_url,
                   title: r.title,
@@ -133,19 +136,49 @@ export function SearchView({
                   comments: r.comments,
                 }
               : null;
+            const playResult = async () => {
+              if (!canResolve) return;
+              setError(null);
+              setResolvingId(resultId);
+              try {
+                const playUrl =
+                  r.play_url ??
+                  (await api.resolveOnlinePlayUrl(r.provider, r.provider_id!));
+                const nextTrack: Track = {
+                  path: playUrl,
+                  title: r.title,
+                  artist: r.artist,
+                  album: r.album,
+                  duration_secs: r.duration_secs ?? null,
+                  provider: r.provider,
+                  provider_id: r.provider_id ?? null,
+                  comment_id: r.comment_id ?? null,
+                  cover_url: r.cover_url ?? null,
+                  comments: r.comments,
+                };
+                setResults((items) =>
+                  items.map((item, idx) =>
+                    idx === i ? { ...item, play_url: playUrl } : item,
+                  ),
+                );
+                onLoadOnlineAsTrack(nextTrack, playUrl);
+              } catch (e) {
+                setError(String(e));
+              } finally {
+                setResolvingId(null);
+              }
+            };
             return (
               <motion.div
                 key={(r.provider_id ?? r.title) + i}
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.02 }}
-                className={`group flex items-center gap-3 rounded-md px-3 py-2 transition-colors hover:bg-[var(--color-surface-1)] ${!playable ? "opacity-40" : ""}`}
+                className={`group flex items-center gap-3 rounded-md px-3 py-2 transition-colors hover:bg-[var(--color-surface-1)] ${!canResolve ? "opacity-40" : ""}`}
               >
                 <button
-                  disabled={!playable}
-                  onClick={() => {
-                    if (track && r.play_url) onLoadOnlineAsTrack(track, r.play_url);
-                  }}
+                  disabled={!canResolve || busyResolving}
+                  onClick={playResult}
                   className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:cursor-not-allowed"
                 >
                   <CoverArt src={r.cover_url} size="md" rounded="md" />
@@ -162,9 +195,14 @@ export function SearchView({
                 <span className="text-[11px] text-[var(--color-text-muted)]">
                   {r.provider}
                 </span>
-                {!playable && (
+                {busyResolving && (
                   <span className="text-[11px] text-[var(--color-text-muted)]">
-                    无播放链接
+                    获取播放链接…
+                  </span>
+                )}
+                {!canResolve && (
+                  <span className="text-[11px] text-[var(--color-text-muted)]">
+                    无歌曲 ID
                   </span>
                 )}
                 {track && (

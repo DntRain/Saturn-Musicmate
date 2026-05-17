@@ -1,9 +1,20 @@
 use std::collections::HashSet;
+use std::sync::OnceLock;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::media::{LyricLine, Lyrics};
+
+fn http_client() -> &'static reqwest::blocking::Client {
+    static CLIENT: OnceLock<reqwest::blocking::Client> = OnceLock::new();
+    CLIENT.get_or_init(|| {
+        reqwest::blocking::Client::builder()
+            .timeout(std::time::Duration::from_secs(12))
+            .build()
+            .expect("http client init failed")
+    })
+}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct OnlineTrackContext {
@@ -39,32 +50,31 @@ pub fn fetch_context(query: &str) -> Result<OnlineTrackContext, String> {
             Ok(context) => return Ok(context),
             Err(qq_err) => {
                 if std::env::var("MUSICMATE_NETEASE_API_BASE").is_ok() {
-                    return fetch_netease_context(query)
-                        .map_err(|netease_err| format!("QQ failed: {qq_err}; NetEase failed: {netease_err}"));
+                    return fetch_netease_context(query).map_err(|netease_err| {
+                        format!("QQ failed: {qq_err}; NetEase failed: {netease_err}")
+                    });
                 }
-                return Err(format!(
-                    "QQ failed: {qq_err}. {}",
-                    qq_api_setup_hint()
-                ));
+                return Err(format!("QQ failed: {qq_err}. {}", qq_api_setup_hint()));
             }
         }
     }
     fetch_netease_context(query)
 }
 
-pub fn search_contexts(query: &str, limit: usize) -> Result<Vec<OnlineTrackContext>, String> {
+pub fn search_contexts(
+    query: &str,
+    limit: usize,
+    include_play_url: bool,
+) -> Result<Vec<OnlineTrackContext>, String> {
     if std::env::var("MUSICMATE_QQ_API_BASE").is_ok()
         || std::env::var("MUSICMATE_NETEASE_API_BASE").is_err()
     {
-        match search_qq_contexts(query, limit) {
+        match search_qq_contexts(query, limit, include_play_url) {
             Ok(contexts) if !contexts.is_empty() => return Ok(contexts),
             Ok(_) => {}
             Err(qq_err) => {
                 if std::env::var("MUSICMATE_NETEASE_API_BASE").is_err() {
-                    return Err(format!(
-                        "QQ failed: {qq_err}. {}",
-                        qq_api_setup_hint()
-                    ));
+                    return Err(format!("QQ failed: {qq_err}. {}", qq_api_setup_hint()));
                 }
             }
         }
@@ -76,11 +86,7 @@ pub fn qq_hot_queries(limit: usize) -> Result<Vec<String>, String> {
     let base = std::env::var("MUSICMATE_QQ_API_BASE")
         .unwrap_or_else(|_| "http://127.0.0.1:3200".to_string());
     let base = base.trim_end_matches('/');
-    let client = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(12))
-        .build()
-        .map_err(|e| format!("http client: {e}"))?;
-    ensure_qq_api_reachable(&client, base)?;
+    let client = http_client();
     let payload: Value = client
         .get(format!("{base}/getRanks"))
         .query(&[("topId", "4"), ("limit", &limit.to_string()), ("page", "0")])
@@ -110,22 +116,22 @@ pub fn qq_hot_queries(limit: usize) -> Result<Vec<String>, String> {
 }
 
 pub fn fetch_qq_context(query: &str) -> Result<OnlineTrackContext, String> {
-    search_qq_contexts(query, 1)?
+    search_qq_contexts(query, 1, true)?
         .into_iter()
         .next()
         .ok_or_else(|| format!("no QQ Music match for {query}"))
 }
 
-pub fn search_qq_contexts(query: &str, limit: usize) -> Result<Vec<OnlineTrackContext>, String> {
+pub fn search_qq_contexts(
+    query: &str,
+    limit: usize,
+    include_play_url: bool,
+) -> Result<Vec<OnlineTrackContext>, String> {
     let query = normalize_qq_query(query);
     let base = std::env::var("MUSICMATE_QQ_API_BASE")
         .unwrap_or_else(|_| "http://127.0.0.1:3200".to_string());
     let base = base.trim_end_matches('/');
-    let client = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(12))
-        .build()
-        .map_err(|e| format!("http client: {e}"))?;
-    ensure_qq_api_reachable(&client, base)?;
+    let client = http_client();
 
     let target = limit.max(1);
     let per_page = target.clamp(10, 60);
@@ -138,7 +144,9 @@ pub fn search_qq_contexts(query: &str, limit: usize) -> Result<Vec<OnlineTrackCo
             Ok(search) => {
                 let items = qq_song_list(&search)
                     .filter(|items| !items.is_empty())
-                    .or_else(|| find_first_array(&search, &["list"]).filter(|items| !items.is_empty()));
+                    .or_else(|| {
+                        find_first_array(&search, &["list"]).filter(|items| !items.is_empty())
+                    });
                 if let Some(items) = items {
                     for candidate in items.iter().filter_map(parse_qq_candidate) {
                         if seen.insert(candidate.mid.clone()) {
@@ -207,14 +215,21 @@ pub fn search_qq_contexts(query: &str, limit: usize) -> Result<Vec<OnlineTrackCo
     let mut contexts = Vec::new();
     for mut candidate in candidates {
         if candidate.album_mid.is_none() {
-            if let Ok(Some((album, album_mid))) = fetch_qq_album_info(&client, base, &candidate.mid) {
+            if let Ok(Some((album, album_mid))) = fetch_qq_album_info(&client, base, &candidate.mid)
+            {
                 if candidate.album.is_empty() {
                     candidate.album = album;
                 }
                 candidate.album_mid = Some(album_mid);
             }
         }
-        let play_url = fetch_qq_play_url(&client, base, &candidate.mid).ok().flatten();
+        let play_url = if include_play_url {
+            fetch_qq_play_url(&client, base, &candidate.mid)
+                .ok()
+                .flatten()
+        } else {
+            None
+        };
         contexts.push(OnlineTrackContext {
             provider: "QQ Music".to_string(),
             provider_id: Some(candidate.mid),
@@ -234,13 +249,25 @@ pub fn search_qq_contexts(query: &str, limit: usize) -> Result<Vec<OnlineTrackCo
                             "https://y.gtimg.cn/music/photo_new/T001R300x300M000{singer_mid}.jpg"
                         )
                     })
-            }),
+                }),
             play_url,
             duration_secs: candidate.duration_secs,
             comments: Vec::new(),
         });
     }
     Ok(contexts)
+}
+
+pub fn resolve_play_url(provider: &str, provider_id: &str) -> Result<String, String> {
+    if !provider.eq_ignore_ascii_case("QQ Music") {
+        return Err(format!("unsupported online provider: {provider}"));
+    }
+    let base = std::env::var("MUSICMATE_QQ_API_BASE")
+        .unwrap_or_else(|_| "http://127.0.0.1:3200".to_string());
+    let base = base.trim_end_matches('/');
+    let client = http_client();
+    fetch_qq_play_url(client, base, provider_id)?
+        .ok_or_else(|| "QQ Music did not return a playable URL".to_string())
 }
 
 fn expanded_qq_queries(query: &str) -> Vec<String> {
@@ -275,7 +302,11 @@ fn normalize_qq_query(query: &str) -> String {
     out.trim().to_string()
 }
 
-pub fn fetch_comments(provider: &str, comment_id: &str, limit: usize) -> Result<Vec<String>, String> {
+pub fn fetch_comments(
+    provider: &str,
+    comment_id: &str,
+    limit: usize,
+) -> Result<Vec<String>, String> {
     if !provider.eq_ignore_ascii_case("QQ Music") {
         return Ok(Vec::new());
     }
@@ -285,25 +316,8 @@ pub fn fetch_comments(provider: &str, comment_id: &str, limit: usize) -> Result<
     let base = std::env::var("MUSICMATE_QQ_API_BASE")
         .unwrap_or_else(|_| "http://127.0.0.1:3200".to_string());
     let base = base.trim_end_matches('/');
-    let client = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(12))
-        .build()
-        .map_err(|e| format!("http client: {e}"))?;
-    ensure_qq_api_reachable(&client, base)?;
-    fetch_qq_comments_by_id(&client, base, id, limit)
-}
-
-fn ensure_qq_api_reachable(client: &reqwest::blocking::Client, base: &str) -> Result<(), String> {
-    client
-        .get(format!("{base}/getHotkey"))
-        .send()
-        .map(|_| ())
-        .map_err(|e| {
-            format!(
-                "QQ 音乐服务未连接：无法访问 {base} ({e}). {}",
-                qq_api_setup_hint()
-            )
-        })
+    let client = http_client();
+    fetch_qq_comments_by_id(client, base, id, limit)
 }
 
 fn qq_api_setup_hint() -> &'static str {
@@ -428,7 +442,9 @@ fn parse_qq_candidate(value: &Value) -> Option<QqSongCandidate> {
                 .map(str::to_string)
         })
         .unwrap_or_else(|| "Unknown Artist".to_string());
-    let album = first_str(value, &["albumname", "album"]).unwrap_or("").to_string();
+    let album = first_str(value, &["albumname", "album"])
+        .unwrap_or("")
+        .to_string();
     let album_mid = first_str(value, &["albummid", "album_mid"])
         .map(str::to_string)
         .or_else(|| {
@@ -482,10 +498,7 @@ pub fn fetch_netease_context(query: &str) -> Result<OnlineTrackContext, String> 
     let base = std::env::var("MUSICMATE_NETEASE_API_BASE")
         .map_err(|_| "MUSICMATE_NETEASE_API_BASE is not set".to_string())?;
     let base = base.trim_end_matches('/');
-    let client = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(12))
-        .build()
-        .map_err(|e| format!("http client: {e}"))?;
+    let client = http_client();
 
     let search: SearchResponse = client
         .get(format!("{base}/search"))
@@ -517,10 +530,7 @@ pub fn fetch_netease_context(query: &str) -> Result<OnlineTrackContext, String> 
         .first()
         .map(|artist| artist.name.clone())
         .unwrap_or_else(|| "Unknown Artist".to_string());
-    let album = song
-        .album
-        .map(|album| album.name)
-        .unwrap_or_default();
+    let album = song.album.map(|album| album.name).unwrap_or_default();
     let comments = comments
         .hot_comments
         .into_iter()
@@ -557,11 +567,7 @@ fn fetch_qq_lyrics(song_mid: &str) -> Result<Lyrics, String> {
     let base = std::env::var("MUSICMATE_QQ_API_BASE")
         .unwrap_or_else(|_| "http://127.0.0.1:3200".to_string());
     let base = base.trim_end_matches('/');
-    let client = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(12))
-        .build()
-        .map_err(|e| format!("http client: {e}"))?;
-    ensure_qq_api_reachable(&client, base)?;
+    let client = http_client();
     let payload: Value = client
         .get(format!("{base}/getLyric"))
         .query(&[("songmid", song_mid), ("isFormat", "true")])

@@ -39,6 +39,7 @@ pub fn run() {
             commands::get_cover_palette,
             commands::get_lyrics,
             commands::search_online,
+            commands::resolve_online_play_url,
             commands::fetch_online_lyrics,
             commands::fetch_track_comments,
             commands::fetch_hot_chart,

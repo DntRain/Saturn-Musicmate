@@ -34,8 +34,14 @@ export const api = {
   getCoverPalette: (source: string) =>
     invoke<{ r: number; g: number; b: number }>("get_cover_palette", { source }),
   getLyrics: (path: string) => invoke<Lyrics>("get_lyrics", { path }),
-  searchOnline: (query: string, limit = 50) =>
-    invoke<OnlineTrackContext[]>("search_online", { query, limit }),
+  searchOnline: (query: string, limit = 50, includePlayUrl = true) =>
+    invoke<OnlineTrackContext[]>("search_online", {
+      query,
+      limit,
+      includePlayUrl,
+    }),
+  resolveOnlinePlayUrl: (provider: string, providerId: string) =>
+    invoke<string>("resolve_online_play_url", { provider, providerId }),
   fetchOnlineLyrics: (provider: string, providerId: string) =>
     invoke<Lyrics>("fetch_online_lyrics", { provider, providerId }),
   fetchTrackComments: (provider: string, commentId: string, limit = 8) =>

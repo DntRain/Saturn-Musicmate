@@ -10,6 +10,8 @@ use tauri::{AppHandle, Emitter, Manager};
 
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
 
 const QQ_API_PORT: u16 = 3200;
 const VENDOR_DIR: &str = "vendor/qq-music-api";
@@ -17,6 +19,8 @@ const SERVICES_DIR: &str = ".services/qq-music-api";
 const RESOURCE_SERVICE_DIR: &str = "qq-music-api";
 const BUNDLED_RESOURCES_SERVICE_DIR: &str = "resources/qq-music-api";
 const STARTUP_TIMEOUT_SECS: u64 = 90;
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 #[derive(Default)]
 pub struct SidecarState {
@@ -70,17 +74,17 @@ fn force_free_port(port: u16) {
 
 #[cfg(not(unix))]
 fn force_free_port(port: u16) {
-    if let Ok(out) = Command::new("powershell")
-        .args([
-            "-NoProfile",
-            "-Command",
-            &format!(
-                "Get-NetTCPConnection -LocalPort {port} -ErrorAction SilentlyContinue | \
+    let mut cmd = Command::new("powershell");
+    cmd.args([
+        "-NoProfile",
+        "-Command",
+        &format!(
+            "Get-NetTCPConnection -LocalPort {port} -ErrorAction SilentlyContinue | \
                  ForEach-Object {{ Stop-Process -Id $_.OwningProcess -Force }}"
-            ),
-        ])
-        .output()
-    {
+        ),
+    ])
+    .creation_flags(CREATE_NO_WINDOW);
+    if let Ok(out) = cmd.output() {
         let _ = out;
     }
 }
@@ -99,10 +103,7 @@ fn pids_on_port(port: u16) -> Vec<i32> {
             return parsed;
         }
     }
-    if let Ok(out) = Command::new("fuser")
-        .arg(format!("{port}/tcp"))
-        .output()
-    {
+    if let Ok(out) = Command::new("fuser").arg(format!("{port}/tcp")).output() {
         return String::from_utf8_lossy(&out.stdout)
             .split_whitespace()
             .filter_map(|l| l.trim().parse().ok())
@@ -141,8 +142,7 @@ fn run(app: &AppHandle) -> Result<(), String> {
         }
     }
 
-    wait_for_port(QQ_API_PORT, STARTUP_TIMEOUT_SECS)
-        .map_err(|e| format!("服务启动超时：{e}"))?;
+    wait_for_port(QQ_API_PORT, STARTUP_TIMEOUT_SECS).map_err(|e| format!("服务启动超时：{e}"))?;
 
     if std::env::var("MUSICMATE_QQ_API_BASE").is_err() {
         std::env::set_var(
@@ -215,11 +215,7 @@ fn locate_vendor(app: Option<&AppHandle>) -> Option<PathBuf> {
 }
 
 fn port_in_use(port: u16) -> bool {
-    TcpStream::connect_timeout(
-        &([127, 0, 0, 1], port).into(),
-        Duration::from_millis(200),
-    )
-    .is_ok()
+    TcpStream::connect_timeout(&([127, 0, 0, 1], port).into(), Duration::from_millis(200)).is_ok()
 }
 
 fn wait_for_port(port: u16, timeout_secs: u64) -> Result<(), String> {
@@ -272,8 +268,11 @@ fn start_node(vendor: &PathBuf) -> Result<Child, String> {
     }
     #[cfg(unix)]
     cmd.process_group(0);
-    cmd.spawn()
-        .map_err(|e| format!("无法启动 QQ 音乐服务：{e}（安装包可能缺少内置服务，或本机未安装 Node.js）"))
+    #[cfg(windows)]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd.spawn().map_err(|e| {
+        format!("无法启动 QQ 音乐服务：{e}（安装包可能缺少内置服务，或本机未安装 Node.js）")
+    })
 }
 
 fn find_bundled_node(vendor: &PathBuf) -> Option<PathBuf> {
@@ -286,12 +285,7 @@ fn find_bundled_node(vendor: &PathBuf) -> Option<PathBuf> {
         bases.push(parent.to_path_buf());
     }
     for base in bases {
-        for rel in [
-            "node/node.exe",
-            "node.exe",
-            "node/bin/node",
-            "node",
-        ] {
+        for rel in ["node/node.exe", "node.exe", "node/bin/node", "node"] {
             let candidate = base.join(rel);
             if candidate.is_file() {
                 return Some(candidate);
