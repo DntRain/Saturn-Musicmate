@@ -96,6 +96,10 @@ export function CommandOverlay({
       onClick={onClose}
       className="fixed inset-0 z-[60] grid place-items-center bg-[var(--color-overlay)] backdrop-blur-2xl"
     >
+      <div
+        data-tauri-drag-region
+        className="absolute left-0 right-32 top-0 h-10"
+      />
       <WindowControls />
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 8 }}
@@ -195,4 +199,3 @@ function WinBtn({
     </button>
   );
 }
-

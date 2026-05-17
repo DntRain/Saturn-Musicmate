@@ -297,7 +297,7 @@ export default function App() {
     <div className="relative flex h-screen w-screen flex-col bg-[var(--color-bg)] text-[var(--color-text)]">
       <div
         data-tauri-drag-region
-        className="fixed inset-x-0 top-0 z-[60] h-7"
+        className="fixed inset-x-0 top-0 z-50 h-7"
       />
       <main className="relative flex min-h-0 flex-1 flex-col">
         <AnimatePresence mode="wait">
