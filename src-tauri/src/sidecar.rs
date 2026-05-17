@@ -15,6 +15,7 @@ const QQ_API_PORT: u16 = 3200;
 const VENDOR_DIR: &str = "vendor/qq-music-api";
 const SERVICES_DIR: &str = ".services/qq-music-api";
 const RESOURCE_SERVICE_DIR: &str = "qq-music-api";
+const BUNDLED_RESOURCES_SERVICE_DIR: &str = "resources/qq-music-api";
 const STARTUP_TIMEOUT_SECS: u64 = 90;
 
 #[derive(Default)]
@@ -198,7 +199,12 @@ fn locate_vendor(app: Option<&AppHandle>) -> Option<PathBuf> {
     }
 
     for base in bases {
-        for rel in [RESOURCE_SERVICE_DIR, VENDOR_DIR, SERVICES_DIR] {
+        for rel in [
+            RESOURCE_SERVICE_DIR,
+            BUNDLED_RESOURCES_SERVICE_DIR,
+            VENDOR_DIR,
+            SERVICES_DIR,
+        ] {
             let candidate = base.join(rel);
             if candidate.join("package.json").is_file() {
                 return Some(candidate.canonicalize().unwrap_or(candidate));

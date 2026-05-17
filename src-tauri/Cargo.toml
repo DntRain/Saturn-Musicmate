@@ -1,6 +1,6 @@
 [package]
 name = "musicmate"
-version = "0.1.8"
+version = "0.1.9"
 description = "Music companion with local playback, lyrics, and AI host lines"
 authors = ["DontRain"]
 edition = "2021"
