@@ -601,12 +601,35 @@ export function HostView({
                   }}
                   placeholder="Reply to Silen…"
                   rows={1}
-                  className="flex-1 resize-none bg-transparent py-1 text-[15px] leading-relaxed text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-faint)]"
+                  className="flex-1 resize-none overflow-hidden bg-transparent py-1 text-[15px] leading-relaxed text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-faint)]"
                 />
+                <button
+                  type="button"
+                  disabled
+                  aria-label="语音"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-[var(--color-text-strong)] transition-colors hover:bg-[var(--color-surface-1)] hover:text-[var(--color-text)] disabled:opacity-50"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 3a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z" />
+                    <path d="M5 11a7 7 0 0 0 14 0" />
+                    <path d="M12 18v3" />
+                    <path d="M8 21h8" />
+                  </svg>
+                </button>
                 <button
                   onClick={() => onSend()}
                   disabled={busy || !input.trim()}
-                  className="grid h-8 w-8 place-items-center rounded-full bg-[var(--color-text)] text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-20"
+                  className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--color-text)] text-[var(--color-bg)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-20"
                   aria-label="发送"
                 >
                   <svg
@@ -809,7 +832,7 @@ function EmptyState({
             placeholder="How can I help you today?"
             rows={2}
             autoFocus
-            className="min-h-[52px] w-full resize-none bg-transparent px-1 text-[15px] leading-relaxed text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-faint)]"
+            className="min-h-[52px] w-full resize-none overflow-hidden bg-transparent px-1 text-[15px] leading-relaxed text-[var(--color-text)] outline-none placeholder:text-[var(--color-text-faint)]"
           />
           <div className="flex items-center gap-1.5">
             <button

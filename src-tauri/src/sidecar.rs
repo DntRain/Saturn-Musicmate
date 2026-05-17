@@ -232,12 +232,13 @@ fn wait_for_port(port: u16, timeout_secs: u64) -> Result<(), String> {
 }
 
 fn run_npm_install(vendor: &PathBuf) -> Result<(), String> {
-    let status = Command::new("npm")
-        .args(["install", "--no-audit", "--no-fund", "--loglevel=error"])
+    let mut cmd = npm_command();
+    cmd.args(["install", "--no-audit", "--no-fund", "--loglevel=error"])
         .current_dir(vendor)
         .stdin(Stdio::null())
         .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
+        .stderr(Stdio::inherit());
+    let status = cmd
         .status()
         .map_err(|e| format!("无法执行 npm install: {e}"))?;
     if !status.success() {
@@ -253,7 +254,7 @@ fn start_node(vendor: &PathBuf) -> Result<Child, String> {
         cmd.args(["-r", "ts-node/register/transpile-only", "src/app.ts"]);
         cmd
     } else {
-        let mut cmd = Command::new("npm");
+        let mut cmd = npm_command();
         cmd.args(["run", "start", "--silent"]);
         cmd
     };
@@ -386,6 +387,20 @@ fn unescape_bash(value: &str) -> String {
         out.push(c);
     }
     out
+}
+
+// On Windows, npm is a .cmd batch script and cannot be invoked directly via
+// CreateProcess — cmd.exe must handle the .cmd extension lookup.
+#[cfg(windows)]
+fn npm_command() -> Command {
+    let mut cmd = Command::new("cmd");
+    cmd.args(["/c", "npm"]);
+    cmd
+}
+
+#[cfg(not(windows))]
+fn npm_command() -> Command {
+    Command::new("npm")
 }
 
 pub fn shutdown(app: &AppHandle) {

@@ -1,0 +1,9 @@
+# Limit parallel codegen jobs to prevent OOM crashes on 16GB systems.
+# Default = num_cpus (16 here); each LLVM codegen job can peak at 500MB–1GB.
+[build]
+jobs = 4
+
+# Dev profile: debug=1 keeps line numbers for backtraces but drops full DWARF
+# variable info, cutting peak memory and link time significantly.
+[profile.dev]
+debug = 1
