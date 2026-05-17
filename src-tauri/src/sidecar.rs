@@ -14,6 +14,7 @@ use std::os::unix::process::CommandExt;
 const QQ_API_PORT: u16 = 3200;
 const VENDOR_DIR: &str = "vendor/qq-music-api";
 const SERVICES_DIR: &str = ".services/qq-music-api";
+const RESOURCE_SERVICE_DIR: &str = "qq-music-api";
 const STARTUP_TIMEOUT_SECS: u64 = 90;
 
 #[derive(Default)]
@@ -197,7 +198,7 @@ fn locate_vendor(app: Option<&AppHandle>) -> Option<PathBuf> {
     }
 
     for base in bases {
-        for rel in [VENDOR_DIR, SERVICES_DIR] {
+        for rel in [RESOURCE_SERVICE_DIR, VENDOR_DIR, SERVICES_DIR] {
             let candidate = base.join(rel);
             if candidate.join("package.json").is_file() {
                 return Some(candidate.canonicalize().unwrap_or(candidate));
@@ -244,9 +245,17 @@ fn run_npm_install(vendor: &PathBuf) -> Result<(), String> {
 }
 
 fn start_node(vendor: &PathBuf) -> Result<Child, String> {
-    let mut cmd = Command::new("npm");
-    cmd.args(["run", "start", "--silent"])
-        .current_dir(vendor)
+    let bundled_node = find_bundled_node(vendor);
+    let mut cmd = if let Some(node) = bundled_node {
+        let mut cmd = Command::new(node);
+        cmd.args(["-r", "ts-node/register/transpile-only", "src/app.ts"]);
+        cmd
+    } else {
+        let mut cmd = Command::new("npm");
+        cmd.args(["run", "start", "--silent"]);
+        cmd
+    };
+    cmd.current_dir(vendor)
         .env("PORT", QQ_API_PORT.to_string())
         .env("AUTO_OPEN_EXPLORER", "false")
         .stdin(Stdio::null())
@@ -258,7 +267,32 @@ fn start_node(vendor: &PathBuf) -> Result<Child, String> {
     #[cfg(unix)]
     cmd.process_group(0);
     cmd.spawn()
-        .map_err(|e| format!("无法 spawn npm start：{e}（请确认已安装 Node.js）"))
+        .map_err(|e| format!("无法启动 QQ 音乐服务：{e}（安装包可能缺少内置服务，或本机未安装 Node.js）"))
+}
+
+fn find_bundled_node(vendor: &PathBuf) -> Option<PathBuf> {
+    let mut bases = Vec::new();
+    bases.push(vendor.clone());
+    if let Some(parent) = vendor.parent() {
+        bases.push(parent.to_path_buf());
+    }
+    if let Some(parent) = vendor.parent().and_then(|p| p.parent()) {
+        bases.push(parent.to_path_buf());
+    }
+    for base in bases {
+        for rel in [
+            "node/node.exe",
+            "node.exe",
+            "node/bin/node",
+            "node",
+        ] {
+            let candidate = base.join(rel);
+            if candidate.is_file() {
+                return Some(candidate);
+            }
+        }
+    }
+    None
 }
 
 fn load_qq_cookie() -> Option<String> {

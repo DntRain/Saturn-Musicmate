@@ -62,6 +62,16 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Bundle QQ Music service for Windows
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force src-tauri/resources | Out-Null
+          git clone --depth 1 https://github.com/Rain120/qq-music-api.git src-tauri/resources/qq-music-api
+          npm install --prefix src-tauri/resources/qq-music-api --no-audit --no-fund --loglevel=error
+          New-Item -ItemType Directory -Force src-tauri/resources/node | Out-Null
+          Copy-Item (Get-Command node).Source src-tauri/resources/node/node.exe
+
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
         env:
@@ -78,7 +88,7 @@ jobs:
             - **macOS**: `.dmg` (universal: Intel + Apple Silicon)
             - **Linux**: `.AppImage` or `.deb`
 
-            > Note: the QQ Music sidecar service is not bundled — set up `.services/qq-music-api` locally for online search to work.
+            > Windows installers include the local QQ Music sidecar service. Fill in QQ Music cookies in Settings before using online search or VIP preview.
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
