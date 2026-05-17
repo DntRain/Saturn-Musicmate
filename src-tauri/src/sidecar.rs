@@ -13,6 +13,7 @@ use std::os::unix::process::CommandExt;
 
 const QQ_API_PORT: u16 = 3200;
 const VENDOR_DIR: &str = "vendor/qq-music-api";
+const SERVICES_DIR: &str = ".services/qq-music-api";
 const STARTUP_TIMEOUT_SECS: u64 = 90;
 
 #[derive(Default)]
@@ -119,7 +120,7 @@ fn run(app: &AppHandle) -> Result<(), String> {
         return Ok(());
     }
 
-    let Some(vendor) = locate_vendor() else {
+    let Some(vendor) = locate_vendor(Some(app)) else {
         emit(app, "idle", "");
         return Ok(());
     };
@@ -173,16 +174,34 @@ fn has_remote_override() -> bool {
     trimmed != default_url && trimmed != default_url.trim_end_matches('/')
 }
 
-fn locate_vendor() -> Option<PathBuf> {
-    let cwd = std::env::current_dir().ok()?;
-    let candidates = [
-        cwd.join(VENDOR_DIR),
-        cwd.join("..").join(VENDOR_DIR),
-        cwd.join("../..").join(VENDOR_DIR),
-    ];
-    for c in candidates {
-        if c.join("package.json").is_file() {
-            return Some(c.canonicalize().unwrap_or(c));
+fn locate_vendor(app: Option<&AppHandle>) -> Option<PathBuf> {
+    let mut bases = Vec::new();
+    if let Ok(cwd) = std::env::current_dir() {
+        bases.push(cwd.clone());
+        if let Some(parent) = cwd.parent() {
+            bases.push(parent.to_path_buf());
+        }
+        if let Some(parent) = cwd.parent().and_then(|p| p.parent()) {
+            bases.push(parent.to_path_buf());
+        }
+    }
+    if let Some(app) = app {
+        if let Ok(resource_dir) = app.path().resource_dir() {
+            bases.push(resource_dir);
+        }
+    }
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(parent) = exe.parent() {
+            bases.push(parent.to_path_buf());
+        }
+    }
+
+    for base in bases {
+        for rel in [VENDOR_DIR, SERVICES_DIR] {
+            let candidate = base.join(rel);
+            if candidate.join("package.json").is_file() {
+                return Some(candidate.canonicalize().unwrap_or(candidate));
+            }
         }
     }
     None
@@ -265,6 +284,7 @@ fn locate_project_root() -> Option<PathBuf> {
         if base.join("qqcookies.txt").is_file()
             || base.join(".env.local").is_file()
             || base.join("vendor/qq-music-api").is_dir()
+            || base.join(".services/qq-music-api").is_dir()
         {
             return Some(base);
         }

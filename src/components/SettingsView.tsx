@@ -254,7 +254,7 @@ export function SettingsView({ onPickFolder }: { onPickFolder?: () => void | Pro
         <Section title="QQ 音乐" hint="本地播放无需 Cookies；在线搜索 / VIP 试听需要 qq-music-api 服务 + QQ Cookies。">
           <Field
             label="服务地址（可选）"
-            hint="留空：仅当本机能跑 Node 且仓库带 vendor/qq-music-api 时自动启动。否则填入你自部署的 qq-music-api 地址。"
+            hint="留空：仅当本机能跑 Node 且应用旁带 vendor/qq-music-api 或 .services/qq-music-api 时自动启动。否则填入你自部署的 qq-music-api 地址。"
           >
             <input
               type="text"
