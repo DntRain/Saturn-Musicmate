@@ -51,7 +51,7 @@ export function usePlayer() {
           ...s,
           currentIndex: index,
           positionMs: 0,
-          cover: track?.cover_url ?? null,
+          cover: track?.cover_url ?? s.cover,
           lyrics: null,
         }));
 

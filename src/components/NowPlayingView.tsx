@@ -135,10 +135,34 @@ export function NowPlayingView({
 }
 
 function Backdrop({ cover }: { cover: string | null }) {
+  const [displayCover, setDisplayCover] = useState<string | null>(cover);
+
+  useEffect(() => {
+    if (!cover) {
+      setDisplayCover(null);
+      return;
+    }
+    if (cover === displayCover) return;
+
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (!cancelled) setDisplayCover(cover);
+    };
+    img.onerror = () => {
+      if (!cancelled) setDisplayCover(null);
+    };
+    img.src = cover;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cover, displayCover]);
+
   return (
     <AnimatePresence mode="popLayout">
       <motion.div
-        key={cover ?? "none"}
+        key={displayCover ?? "none"}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -146,9 +170,9 @@ function Backdrop({ cover }: { cover: string | null }) {
         className="absolute inset-0"
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,var(--color-accent-soft),transparent_32%),radial-gradient(circle_at_78%_16%,rgba(20,184,166,0.10),transparent_30%)]" />
-        {cover && (
+        {displayCover && (
           <img
-            src={cover}
+            src={displayCover}
             alt=""
             className="h-full w-full scale-125 object-cover opacity-60 blur-3xl"
           />

@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useEffect, useState } from "react";
 
 const PLACEHOLDER = (
   <svg
@@ -27,6 +28,30 @@ export function CoverArt({
   className?: string;
   rounded?: "sm" | "md" | "lg" | "xl";
 }) {
+  const [displaySrc, setDisplaySrc] = useState<string | null>(src ?? null);
+
+  useEffect(() => {
+    if (!src) {
+      setDisplaySrc(null);
+      return;
+    }
+    if (src === displaySrc) return;
+
+    let cancelled = false;
+    const img = new Image();
+    img.onload = () => {
+      if (!cancelled) setDisplaySrc(src);
+    };
+    img.onerror = () => {
+      if (!cancelled) setDisplaySrc(null);
+    };
+    img.src = src;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [displaySrc, src]);
+
   const sizes = {
     sm: "h-10 w-10",
     md: "h-14 w-14",
@@ -49,12 +74,12 @@ export function CoverArt({
         className,
       )}
     >
-      {src ? (
+      {displaySrc ? (
         <img
-          src={src}
+          src={displaySrc}
           alt=""
-          className="h-full w-full object-cover"
-          loading="lazy"
+          className="h-full w-full object-cover transition-opacity duration-300"
+          decoding="async"
         />
       ) : (
         PLACEHOLDER
