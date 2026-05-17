@@ -251,7 +251,11 @@ fn start_node(vendor: &PathBuf) -> Result<Child, String> {
     let bundled_node = find_bundled_node(vendor);
     let mut cmd = if let Some(node) = bundled_node {
         let mut cmd = Command::new(node);
-        cmd.args(["-r", "ts-node/register/transpile-only", "src/app.ts"]);
+        if vendor.join("src/app.js").is_file() {
+            cmd.arg("src/app.js");
+        } else {
+            cmd.args(["-r", "ts-node/register/transpile-only", "src/app.ts"]);
+        }
         cmd
     } else {
         let mut cmd = npm_command();

@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
+    "tauri:build": "npm run prepare:qq-api && tauri build",
+    "prepare:qq-api": "npm install --prefix resources/qq-music-api --omit=dev --no-audit --no-fund --loglevel=error",
     "tui": "cargo run -p musicmate --bin musicmate-tui --"
   },
   "dependencies": {
