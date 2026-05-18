@@ -58,4 +58,4 @@ qqcookies.txt
 .cargo/
 
 # Bundled Node.js binary (download manually before building installer)
-resources/node.exe
+src-tauri/resources/node.exe
