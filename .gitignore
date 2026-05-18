@@ -56,3 +56,6 @@ qqcookies.txt
 
 # Local machine-specific Cargo config (jobs, linker tweaks, etc.)
 .cargo/
+
+# Bundled Node.js binary (download manually before building installer)
+resources/node.exe
