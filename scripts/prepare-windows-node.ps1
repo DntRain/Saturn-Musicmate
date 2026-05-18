@@ -31,7 +31,21 @@ if (-not $expectedLine) {
 }
 
 $expectedHash = ($expectedLine -split "\s+")[0].ToLowerInvariant()
-$actualHash = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+$hashCommand = Get-Command Get-FileHash -ErrorAction SilentlyContinue
+if ($hashCommand) {
+  $actualHash = (Get-FileHash $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+} else {
+  $certutilOutput = certutil -hashfile $zipPath SHA256
+  if ($LASTEXITCODE -ne 0) {
+    throw "certutil failed to hash $zipPath"
+  }
+  $actualHash = ($certutilOutput | Where-Object { $_ -match '^[0-9a-fA-F]{64}$' } | Select-Object -First 1).ToLowerInvariant()
+}
+
+if (-not $actualHash) {
+  throw "Could not compute SHA256 for $zipPath"
+}
+
 if ($actualHash -ne $expectedHash) {
   Remove-Item $zipPath -Force
   throw "SHA256 mismatch for $zipName. Expected $expectedHash, got $actualHash"
