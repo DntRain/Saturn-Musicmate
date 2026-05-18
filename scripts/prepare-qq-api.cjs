@@ -4,9 +4,10 @@ const path = require("node:path");
 
 const repoRoot = path.resolve(__dirname, "..");
 const serviceDir = path.join(repoRoot, "src-tauri", "resources", "qq-music-api");
+const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
 execFileSync(
-  "npm",
+  npmCommand,
   [
     "install",
     "--prefix",
