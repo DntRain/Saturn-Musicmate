@@ -53,6 +53,7 @@ qqcookies.txt
 
 # Claude local
 .claude/
+.cache/
 
 # Local machine-specific Cargo config (jobs, linker tweaks, etc.)
 .cargo/

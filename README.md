@@ -202,7 +202,7 @@ The repository uses a single mainline with platform-specific Tauri config overla
 
 - `src-tauri/tauri.conf.json` is the default Linux/general config.
 - `src-tauri/tauri.windows.conf.json` is merged only for Windows builds and adds the bundled `resources/node.exe`.
-- `src-tauri/resources/node.exe` is intentionally ignored and should be supplied on the Windows build machine before creating a Windows installer.
+- `src-tauri/resources/node.exe` is intentionally ignored and is prepared on the Windows build machine before creating a Windows installer.
 
 Linux build:
 
@@ -216,4 +216,4 @@ Windows build:
 npm run tauri:build:windows
 ```
 
-CI runs Linux, Windows, and macOS checks from the same `main` branch. The Windows CI job creates an empty `node.exe` placeholder for compile-time resource validation only; release builds must use a real Node.js binary.
+CI runs Linux, Windows, and macOS checks from the same `main` branch. The Windows CI job downloads the official Node.js Windows zip, verifies it with the matching `SHASUMS256.txt`, and copies the real `node.exe` into `src-tauri/resources/node.exe` before validating the Windows Tauri config.

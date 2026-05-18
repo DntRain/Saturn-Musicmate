@@ -43,12 +43,9 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Prepare Windows bundled Node placeholder
+      - name: Prepare Windows bundled Node
         if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force src-tauri/resources | Out-Null
-          New-Item -ItemType File -Force src-tauri/resources/node.exe | Out-Null
+        run: npm run prepare:windows-node
 
       - name: Prepare QQ API resources
         run: npm run prepare:qq-api
