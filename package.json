@@ -13,7 +13,7 @@
     "tauri:build:linux": "npm run prepare:qq-api && tauri build",
     "tauri:build:windows": "npm run prepare:windows-node && npm run prepare:qq-api && tauri build --config src-tauri/tauri.windows.conf.json",
     "prepare:windows-node": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-windows-node.ps1",
-    "prepare:qq-api": "npm install --prefix src-tauri/resources/qq-music-api --omit=dev --no-audit --no-fund --loglevel=error",
+    "prepare:qq-api": "node scripts/prepare-qq-api.cjs",
     "tui": "cargo run -p musicmate --bin musicmate-tui --"
   },
   "dependencies": {
