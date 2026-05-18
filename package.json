@@ -10,6 +10,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "npm run prepare:qq-api && tauri build",
+    "tauri:build:linux": "npm run prepare:qq-api && tauri build",
+    "tauri:build:windows": "npm run prepare:qq-api && tauri build --config src-tauri/tauri.windows.conf.json",
     "prepare:qq-api": "npm install --prefix src-tauri/resources/qq-music-api --omit=dev --no-audit --no-fund --loglevel=error",
     "tui": "cargo run -p musicmate --bin musicmate-tui --"
   },

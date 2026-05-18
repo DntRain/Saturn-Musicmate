@@ -195,3 +195,25 @@ cargo test -p musicmate
 ```
 
 The old Tauri frontend is no longer part of the Rust runtime. The reusable music, media, AI, TTS, and player logic lives under `src-tauri/src` for now, but the crate builds as a normal CLI/TUI binary.
+
+## Platform Builds
+
+The repository uses a single mainline with platform-specific Tauri config overlays.
+
+- `src-tauri/tauri.conf.json` is the default Linux/general config.
+- `src-tauri/tauri.windows.conf.json` is merged only for Windows builds and adds the bundled `resources/node.exe`.
+- `src-tauri/resources/node.exe` is intentionally ignored and should be supplied on the Windows build machine before creating a Windows installer.
+
+Linux build:
+
+```bash
+npm run tauri:build:linux
+```
+
+Windows build:
+
+```powershell
+npm run tauri:build:windows
+```
+
+CI runs Linux, Windows, and macOS checks from the same `main` branch. The Windows CI job creates an empty `node.exe` placeholder for compile-time resource validation only; release builds must use a real Node.js binary.
