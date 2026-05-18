@@ -15,7 +15,7 @@ jobs:
       matrix:
         include:
           - platform: windows-latest
-            args: "--bundles nsis"
+            args: "--bundles nsis --config src-tauri/tauri.windows.conf.json"
           - platform: macos-latest
             args: "--target universal-apple-darwin"
           - platform: ubuntu-22.04
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Setup Rust
@@ -62,15 +62,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Bundle QQ Music service for Windows
+      - name: Prepare Windows bundled Node
         if: matrix.platform == 'windows-latest'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force src-tauri/resources | Out-Null
-          git clone --depth 1 https://github.com/Rain120/qq-music-api.git src-tauri/resources/qq-music-api
-          npm install --prefix src-tauri/resources/qq-music-api --no-audit --no-fund --loglevel=error
-          New-Item -ItemType Directory -Force src-tauri/resources/node | Out-Null
-          Copy-Item (Get-Command node).Source src-tauri/resources/node/node.exe
+        run: npm run prepare:windows-node
+
+      - name: Prepare QQ API resources
+        run: npm run prepare:qq-api
 
       - name: Build and release
         uses: tauri-apps/tauri-action@v0
