@@ -4,7 +4,8 @@ const path = require("node:path");
 
 const repoRoot = path.resolve(__dirname, "..");
 const serviceDir = path.join(repoRoot, "src-tauri", "resources", "qq-music-api");
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+const isWindows = process.platform === "win32";
+const npmCommand = "npm";
 
 execFileSync(
   npmCommand,
@@ -18,7 +19,7 @@ execFileSync(
     "--loglevel=error",
     "--no-bin-links",
   ],
-  { stdio: "inherit" },
+  { stdio: "inherit", shell: isWindows },
 );
 
 const accidentalSelf = path.join(serviceDir, "node_modules", "musicmate");
