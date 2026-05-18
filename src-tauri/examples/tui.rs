@@ -471,7 +471,7 @@ fn load_hot_recommendations(app: &mut App, player_tx: &Sender<Command>) {
     };
     let mut contexts = Vec::new();
     for query in queries {
-        if let Ok(mut found) = online::search_contexts(&query, 1) {
+        if let Ok(mut found) = online::search_contexts(&query, 1, true) {
             contexts.append(&mut found);
         }
     }
@@ -556,7 +556,7 @@ fn handle_search_key(app: &mut App, player_tx: &Sender<Command>, code: KeyCode) 
 
 fn search_online_track(app: &mut App, player_tx: &Sender<Command>, query: &str) {
     app.status = format!("Searching online: {query}");
-    match online::search_contexts(query, 10) {
+    match online::search_contexts(query, 10, true) {
         Ok(contexts) => {
             let provider = contexts
                 .first()

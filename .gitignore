@@ -57,5 +57,5 @@ qqcookies.txt
 # Local machine-specific Cargo config (jobs, linker tweaks, etc.)
 .cargo/
 
-# Bundled Node.js binary (download manually before building installer)
+# Windows branch bundled Node.js binary
 src-tauri/resources/node.exe
